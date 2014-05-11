@@ -17,7 +17,7 @@ if [ $(basename "$(pwd)") == $SCRIPT_FOLDER ] ; then cd .. ; fi
 mkdir -p $EXTERNAL_DEPENDENCIES_FOLDER
 cd $EXTERNAL_DEPENDENCIES_FOLDER
 
-echo "Grabbing dependencies ..."
+echo "Grabbing dependencies ..." 
 
 # Clone each dependency, based on the repository name and a given commit:
 for dep in \
@@ -28,23 +28,24 @@ for dep in \
     'http://luajit.org/git/luajit-2.0.git 392b6c94ae4b969f7fc74b21501b5e884c002892' 
 do
     # Split our combined URL+commit:
-    set -- $dep ; URL=$1 ; commit=$2 ; folder=$(basename "$URL")
+    set -- $dep ; URL=$1 ; commit=$2 ; folder=$(basename "$URL" | sed 's/\.git$//')
 
-    echo "Cloning $URL into \"$EXTERNAL_DEPENDENCIES_FOLDER\""
+    echo "Cloning $URL into \"$EXTERNAL_DEPENDENCIES_FOLDER\"" | colorify $LIGHT_BLUE
 
     # Avoid doing anything if the location already exists:
     if [ -e $folder ] ; then
-        echo "$URL already exists. Continuing."
+        echo "$URL already exists. Continuing." | colorify $YELLOW
         continue
     fi
 
     # If the location did not exist, clone into it and checkout the desired commit.
     git clone "$URL"
 
-    echo "Checking out commit \"$commit\" for \"$URL \" ..."
+    echo "Checking out commit \"$commit\" for \"$URL\" ..." | colorify $LIGHT_BLUE
     cd "$folder"
     git checkout --quiet "$commit"
-    echo "Checked out commit \"$commit\" for \"$URL \"."
+    echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $BLUE
+    cd ..
 done
 
 echo "Done grabbing dependencies!"
