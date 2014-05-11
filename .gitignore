@@ -1,1 +1,3 @@
 dependencies/external/*
+build/
+build-mingw32/

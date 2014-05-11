@@ -11,9 +11,11 @@ set -e # Good practice -- exit completely on any bad exit code
 # Directory structure.
 ###############################################################################
 
-SCRIPT_FOLDER='scripts'
-DEPENDENCIES_FOLDER='dependencies'
-EXTERNAL_DEPENDENCIES_FOLDER='dependencies/external'
+SCRIPT_FOLDER=scripts
+DEPENDENCIES_FOLDER=dependencies
+EXTERNAL_DEPENDENCIES_FOLDER=dependencies/external
+BUILD_FOLDER=build
+RUNTIME_FOLDER=runtime
 
 ###############################################################################
 # Colour constants for 'colorify'.
@@ -59,4 +61,26 @@ function colorify() {
     fi 
 }
 
+###############################################################################
+# Bash function to check for a flag in 'args' and remove it.
+# Treats 'args' as one long string. 
+# Returns true if flag was removed.
+###############################################################################
 
+args="$@" # Create a mutable copy of the program arguments
+function handle_flag(){
+    flag=$1
+    local new_args=""
+    local got
+    got=1 # False!
+    for arg in $args ; do
+        if [ $arg = $flag ] ; then
+            args="${args/$flag/}"
+            got=0 # True!
+        else
+            new_args="$new_args $arg"
+        fi
+    done
+    args="$new_args"
+    return $got # False!
+}

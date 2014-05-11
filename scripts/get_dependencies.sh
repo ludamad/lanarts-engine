@@ -8,18 +8,24 @@
 set -e # Good practice -- exit completely on any bad exit code
 
 # Set common variables and shell-script safety settings
-source $(dirname "$0")/common.sh 
+source "`dirname "$0"`/common.sh"
 
-# Enter dependencies/ folder, where we will clone into
-if [ $(basename "$(pwd)") == $SCRIPT_FOLDER ] ; then cd .. ; fi
+# Find base folder:
+if [ $(basename "$(pwd)") == "$SCRIPT_FOLDER" ] ; then cd .. ; fi
+BASE_FOLDER="$(pwd)"
 
-# Ensure external dependency folder exists, and enter it:
-mkdir -p $EXTERNAL_DEPENDENCIES_FOLDER
-cd $EXTERNAL_DEPENDENCIES_FOLDER
+# Ensure external dependency folder exists:
+mkdir -p "$EXTERNAL_DEPENDENCIES_FOLDER"
+
+###############################################################################
+# Clone each dependency, based on the repository name and a given commit:
+###############################################################################
 
 echo "Grabbing dependencies ..." 
 
-# Clone each dependency, based on the repository name and a given commit:
+# Enter external dependency folder:
+cd "$EXTERNAL_DEPENDENCIES_FOLDER"
+
 for dep in \
     'https://github.com/LuaDist/busted 5cb536a6a79e8428d9cc922ab1ad07650d104dae' \
     'https://github.com/LuaDist/lpeg baf0dc90b9278360be719dbfb8e56d34ce3c61bd'  \
@@ -28,7 +34,10 @@ for dep in \
     'http://luajit.org/git/luajit-2.0.git 392b6c94ae4b969f7fc74b21501b5e884c002892' 
 do
     # Split our combined URL+commit:
-    set -- $dep ; URL=$1 ; commit=$2 ; folder=$(basename "$URL" | sed 's/\.git$//')
+    set -- $dep ; URL=$1 ; commit=$2 
+
+    # Grab the folder we will clone into, minus any '.git' suffixes:
+    folder=$(basename "$URL" | sed 's/\.git$//')
 
     echo "Cloning $URL into \"$EXTERNAL_DEPENDENCIES_FOLDER\"" | colorify $LIGHT_BLUE
 
@@ -44,8 +53,28 @@ do
     echo "Checking out commit \"$commit\" for \"$URL\" ..." | colorify $LIGHT_BLUE
     cd "$folder"
     git checkout --quiet "$commit"
-    echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $BLUE
+    echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $YELLOW
     cd ..
 done
 
 echo "Done grabbing dependencies!"
+
+###############################################################################
+# Overwrite the existing version of LuaJIT in the MOAI folder:
+###############################################################################
+
+echo "Adjusting MOAI LuaJIT version..."
+
+cd "$BASE_FOLDER"
+
+LUAJIT="$EXTERNAL_DEPENDENCIES_FOLDER/luajit-2.0"
+MOAI_DEV="$EXTERNAL_DEPENDENCIES_FOLDER/moai-dev"
+
+# Use wildcard expansion to find the LuaJIT folder:
+MOAI_DEV_LUAJIT=$(echo "$EXTERNAL_DEPENDENCIES_FOLDER/moai-dev/3rdparty/LuaJIT"*)
+
+# Replace the existing LuaJIT folder:
+echo "Replacing $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $LIGHT_BLUE
+rm -rf "$MOAI_DEV_LUAJIT"
+cp -r "$LUAJIT" "$MOAI_DEV_LUAJIT"
+echo "Replaced $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $YELLOW
