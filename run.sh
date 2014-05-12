@@ -19,7 +19,8 @@ BUILD_LINUX=TRUE
 BUILD_WINDOWS=FALSE
 CMAKE_COMMAND=cmake
 MAKE_COMMAND=make
-BUILD_FOLDER=build
+BUILD_ROOT="$(pwd)/build"
+BUILD_FOLDER="$BUILD_ROOT/native"
 
 if handle_flag "--vanilla-lua" || handle_flag "-vl" ; then
     USE_LUAJIT=FALSE
@@ -27,10 +28,10 @@ fi
 if handle_flag "--optimize" || handle_flag "-O" ; then
     BUILD_TYPE=Debug
 fi
-if handle_flag "--mingw32" || handle_flag "--windows" || handle_flag "-W" ; then 
+if handle_flag "--mingw32" || handle_flag "-M" ; then 
     CMAKE_COMMAND=mingw32-cmake
     MAKE_COMMAND=mingw32-make
-    BUILD_FOLDER=build-mingw32
+    BUILD_FOLDER="$BUILD_ROOT/mingw32"
     BUILD_LINUX=FALSE
     BUILD_WINDOWS=TRUE
 fi
@@ -65,8 +66,7 @@ function run_cmake() {
         -DMOAI_UNTZ=TRUE \
         -DMOAI_LUAJIT=$USE_LUAJIT \
         -DMOAI_HTTP_CLIENT=TRUE \
-        -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    ../
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE "$BUILD_ROOT"
     echo "Configured build via CMake." | colorify $YELLOW
 }
 
@@ -74,7 +74,7 @@ function run_cmake() {
 # Build Lanarts. Try to detect the number of cores for building with make.
 ###############################################################################
 
-function build_lanarts(){
+function build_engine(){
     mkdir -p "$BUILD_FOLDER"
     cd "$BUILD_FOLDER"
 
@@ -99,9 +99,9 @@ function build_lanarts(){
 #   --force/-f: Do not build (use last successful compiled binary)
 if ! handle_flag "-f" && ! handle_flag "--force" ; then
     if handle_flag "--verbose" || handle_flag "-v" ; then
-       build_lanarts
+       build_engine
     else
-        build_lanarts > /dev/null
+       build_engine > /dev/null
     fi
 fi
 
@@ -109,13 +109,13 @@ fi
 # Running the game. 
 ###############################################################################
 
-function run_lanarts(){
+function run_engine(){
     cd runtime
     if handle_flag "--gdb" || handle_flag "-g" ; then
         echo "Wrapping in GDB:" | colorify $YELLOW
-        gdb -silent -ex=r --args ../$BUILD_FOLDER/src/lanarts $args
+        gdb -silent -ex=r --args ../$BUILD_FOLDER/src/engine $args
     else
-        ../$BUILD_FOLDER/src/lanarts $args
+        ../$BUILD_FOLDER/src/engine $args
     fi
     cd ..
 }
