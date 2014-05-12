@@ -42,12 +42,18 @@ if handle_flag "--mingw32" || handle_flag "-M" ; then
 fi
 
 ###############################################################################
-# Run CMake. Specify configuration settings for MOAI.
+# Download the dependencies if they have not yet been downloaded.
+###############################################################################
+
+bash ./scripts/get_dependencies.sh
+
+###############################################################################
+# Function to run CMake. Specify configuration settings for MOAI.
 ###############################################################################
 
 function run_cmake() {
     echo "Configuring build via CMake..." | colorify $LIGHT_BLUE
-    $CMAKE_COMMAND \
+    "$CMAKE_COMMAND" \
         -DBUILD_LINUX=$BUILD_LINUX \
         -DBUILD_WINDOWS=$BUILD_WINDOWS \
         -DSDL_HOST=TRUE \
@@ -76,7 +82,8 @@ function run_cmake() {
 }
 
 ###############################################################################
-# Build the engine. Try to detect the number of cores for building with make.
+# Function to build the engine. 
+# Try to detect the number of cores for building with make.
 ###############################################################################
 
 function build_engine(){
@@ -85,7 +92,7 @@ function build_engine(){
 
     run_cmake
     if handle_flag "--clean" ; then
-        $MAKE_COMMAND clean
+        "$MAKE_COMMAND" clean
     fi
 
     # Configure amount of cores used
@@ -96,17 +103,18 @@ function build_engine(){
     fi
 
     echo "Building via generated Makefile..." | colorify $LIGHT_BLUE
-    $MAKE_COMMAND V=1 -j$((cores+1))
+    "$MAKE_COMMAND" -j$((cores+1))
     echo "Built via generated Makefile." | colorify $YELLOW
     cd ..
 }
 
-#   --force/-f: Do not build (use last successful compiled binary)
-if ! handle_flag "-f" && ! handle_flag "--force" ; then
-    if handle_flag "--quiet" || handle_flag "-q" ; then
-       build_engine > /dev/null
-    else
-       build_engine
-    fi
+###############################################################################
+# Build the engine.
+###############################################################################
+
+if handle_flag "--quiet" || handle_flag "-q" ; then
+   build_engine > /dev/null
+else
+   build_engine
 fi
 
