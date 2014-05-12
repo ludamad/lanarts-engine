@@ -15,8 +15,6 @@ SCRIPT_FOLDER=scripts
 DEPENDENCIES_FOLDER=dependencies
 EXTERNAL_DEPENDENCIES_FOLDER=dependencies/external
 PATCHES_FOLDER=dependencies/patches
-BUILD_FOLDER=build
-RUNTIME_FOLDER=runtime
 
 ###############################################################################
 # Colour constants for 'colorify'.

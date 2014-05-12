@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# Build the various components of the Lanarts engine.
+# Build the various components of the engine.
 ###############################################################################
 
 set -e # Good practice -- exit completely on any bad exit code
@@ -19,7 +19,7 @@ BUILD_LINUX=TRUE
 BUILD_WINDOWS=FALSE
 CMAKE_COMMAND=cmake
 MAKE_COMMAND=make
-BUILD_ROOT="$(pwd)/build"
+BUILD_ROOT="$(pwd)/builds"
 BUILD_FOLDER="$BUILD_ROOT/native"
 
 if handle_flag "--vanilla-lua" || handle_flag "-vl" ; then
@@ -71,7 +71,7 @@ function run_cmake() {
 }
 
 ###############################################################################
-# Build Lanarts. Try to detect the number of cores for building with make.
+# Build the engine. Try to detect the number of cores for building with make.
 ###############################################################################
 
 function build_engine(){
@@ -98,24 +98,10 @@ function build_engine(){
 
 #   --force/-f: Do not build (use last successful compiled binary)
 if ! handle_flag "-f" && ! handle_flag "--force" ; then
-    if handle_flag "--verbose" || handle_flag "-v" ; then
-       build_engine
-    else
+    if handle_flag "--quiet" || handle_flag "-q" ; then
        build_engine > /dev/null
+    else
+       build_engine
     fi
 fi
 
-###############################################################################
-# Running the game. 
-###############################################################################
-
-function run_engine(){
-    cd runtime
-    if handle_flag "--gdb" || handle_flag "-g" ; then
-        echo "Wrapping in GDB:" | colorify $YELLOW
-        gdb -silent -ex=r --args ../$BUILD_FOLDER/src/engine $args
-    else
-        ../$BUILD_FOLDER/src/engine $args
-    fi
-    cd ..
-}

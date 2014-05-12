@@ -1,3 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 add_subdirectory( external/moai-dev/cmake ) 
+add_subdirectory( bundled/enet ) 
+add_subdirectory( bundled/libxmi ) 
+add_subdirectory( bundled/rvo2 ) 
+add_subdirectory( bundled/lua-yaml ) 
 add_definitions(-w)
