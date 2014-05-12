@@ -7,11 +7,12 @@
 
 set -e # Good practice -- exit completely on any bad exit code
 
-# Set common variables and shell-script safety settings
-source "`dirname "$0"`/common.sh"
+# Navigate to base folder:
+cd "`dirname "$0"`"/.. 
 
-# Find base folder:
-if [ $(basename "$(pwd)") == "$SCRIPT_FOLDER" ] ; then cd .. ; fi
+# Set common variables and shell-script safety settings
+source "scripts/common.sh"
+
 BASE_FOLDER="$(pwd)"
 
 # Ensure external dependency folder exists:

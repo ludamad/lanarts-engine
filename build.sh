@@ -6,8 +6,13 @@
 
 set -e # Good practice -- exit completely on any bad exit code
 
+# Navigate to base folder:
+cd "`dirname "$0"`"
+
 # Set common variables and shell-script safety settings
 source "scripts/common.sh"
+
+BASE_FOLDER="$(pwd)"
 
 ###############################################################################
 # Handle build flags.
@@ -19,7 +24,7 @@ BUILD_LINUX=TRUE
 BUILD_WINDOWS=FALSE
 CMAKE_COMMAND=cmake
 MAKE_COMMAND=make
-BUILD_ROOT="$(pwd)/builds"
+BUILD_ROOT="$BASE_FOLDER/builds"
 BUILD_FOLDER="$BUILD_ROOT/native"
 
 if handle_flag "--vanilla-lua" || handle_flag "-vl" ; then
