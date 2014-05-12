@@ -98,11 +98,11 @@ function build_lanarts(){
 
 #   --force/-f: Do not build (use last successful compiled binary)
 if ! handle_flag "-f" && ! handle_flag "--force" ; then
-#    if handle_flag "--verbose" || handle_flag "-v" ; then
-        build_lanarts
-#    else
-#        build_lanarts > /dev/null
-#    fi
+    if handle_flag "--verbose" || handle_flag "-v" ; then
+       build_lanarts
+    else
+        build_lanarts > /dev/null
+    fi
 fi
 
 ###############################################################################

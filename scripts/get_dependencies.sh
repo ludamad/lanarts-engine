@@ -24,7 +24,7 @@ mkdir -p "$EXTERNAL_DEPENDENCIES_FOLDER"
 echo "Grabbing dependencies ..." 
 
 # Enter external dependency folder:
-cd "$EXTERNAL_DEPENDENCIES_FOLDER"
+cd "$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER"
 
 for dep in \
     'https://github.com/LuaDist/busted 5cb536a6a79e8428d9cc922ab1ad07650d104dae' \
@@ -54,6 +54,23 @@ do
     cd "$folder"
     git checkout --quiet "$commit"
     echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $YELLOW
+
+    ###############################################################################
+    # If we cloned a subrepository (external dependency), apply the patches in 
+    # dependencies/patches/<repo name> folder.
+    ###############################################################################
+
+    P="$BASE_FOLDER/$PATCHES_FOLDER/$folder"
+    if [ -e "$P" ] ; then
+        echo "Applying patches for $(pwd) ..." | colorify $LIGHT_BLUE
+        PP="$P/$patch_folder"
+        for patch_file in $(ls "$PP") ; do
+            echo "Applying $PP/$patch_file to $(pwd)" | colorify $LIGHT_BLUE
+            patch -p1 < "$PP/$patch_file"
+        done
+        echo "Applied patches for $(pwd)." | colorify $YELLOW
+    fi
+
     cd ..
 done
 
@@ -78,3 +95,4 @@ echo "Replacing $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $LIGHT_BLUE
 rm -rf "$MOAI_DEV_LUAJIT"
 cp -r "$LUAJIT" "$MOAI_DEV_LUAJIT"
 echo "Replaced $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $YELLOW
+

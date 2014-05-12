@@ -53,8 +53,4 @@ enable_testing()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bundled/lua-5.1")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bundled/")
 
-# For Mingw support on Fedora:
-if(WIN32) 
-    include_directories("/usr/i686-w64-mingw32/sys-root/mingw/include/")
-endif()
 add_subdirectory( dependencies ) 
