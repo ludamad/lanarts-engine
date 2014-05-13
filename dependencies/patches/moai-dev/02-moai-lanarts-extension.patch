@@ -1,0 +1,34 @@
+diff --git a/cmake/moai-luaext/CMakeLists.txt b/cmake/moai-luaext/CMakeLists.txt
+index 76ae4c8..c6ff6c7 100644
+--- a/cmake/moai-luaext/CMakeLists.txt
++++ b/cmake/moai-luaext/CMakeLists.txt
+@@ -23,6 +23,7 @@ target_link_libraries ( moai-luaext
+ 	moai-core
+   luasocket
+   luafilesystem
++  lanarts-libs
+ )
+ 
+ if (MOAI_CURL) 
+diff --git a/src/moai-luaext/host.cpp b/src/moai-luaext/host.cpp
+index e3e91a6..a47acf9 100644
+--- a/src/moai-luaext/host.cpp
++++ b/src/moai-luaext/host.cpp
+@@ -23,11 +23,17 @@ void AKULuaExtAppFinalize () {
+ void AKULuaExtAppInitialize () {
+ }
+ 
++/* For Lanarts engine only: */
++void LanartsMOAILuaExtHook(lua_State* L);
++
+ //----------------------------------------------------------------//
+ void AKULuaExtContextInitialize () {
+ 
+ 	lua_State* state = AKUGetLuaState ();
+ 
++        /* For Lanarts engine only: */
++        LanartsMOAILuaExtHook ( state );
++
+ 	#if MOAI_WITH_LIBCRYPTO
+ 		luaopen_crypto ( state );
+ 	#endif

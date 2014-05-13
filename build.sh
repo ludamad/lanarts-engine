@@ -13,6 +13,38 @@ cd "`dirname "$0"`"
 source "scripts/common.sh"
 
 BASE_FOLDER="$(pwd)"
+BUILD_ROOT="$BASE_FOLDER/builds"
+
+##############################################################################
+# Eclipse options
+#   --eclipse/-e: Create eclipse project files. Exits immediately!
+###############################################################################
+
+# Create eclipse-project-files
+if handle_flag "--eclipse" || handle_flag "-e" ; then
+
+    read -e -p "Where would you like to create Eclispe project files? " ECLIPSE_PATH
+    echo "Creating Eclipse project files in \"$ECLIPSE_PATH\" ..." | colorify $LIGHT_BLUE
+
+    if [ ! -e "$ECLIPSE_PATH" ] ; then
+        while true; do
+            read -p "Path does not exist, create it? " yn
+            case $yn in
+                [Yy]* ) mkdir -p "$ECLIPSE_PATH" ; break;;
+                [Nn]* ) exit;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+ 
+    cd "$ECLIPSE_PATH"
+
+    # Eclipse project creation
+    cmake -G"Eclipse CDT4 - Unix Makefiles" "$BUILD_ROOT"
+
+    echo "Created Eclipse project files in \"$ECLIPSE_PATH\"." | colorify $YELLOW
+    exit
+fi
 
 ###############################################################################
 # Handle build flags.
@@ -24,14 +56,13 @@ BUILD_LINUX=TRUE
 BUILD_WINDOWS=FALSE
 CMAKE_COMMAND=cmake
 MAKE_COMMAND=make
-BUILD_ROOT="$BASE_FOLDER/builds"
 BUILD_FOLDER="$BUILD_ROOT/native"
 
 if handle_flag "--vanilla-lua" || handle_flag "-vl" ; then
     USE_LUAJIT=FALSE
 fi
 if handle_flag "--optimize" || handle_flag "-O" ; then
-    BUILD_TYPE=Debug
+    BUILD_TYPE=Release
 fi
 if handle_flag "--mingw32" || handle_flag "-M" ; then 
     CMAKE_COMMAND=mingw32-cmake
@@ -105,6 +136,10 @@ function build_engine(){
     echo "Building via generated Makefile..." | colorify $LIGHT_BLUE
     "$MAKE_COMMAND" -j$((cores+1))
     echo "Built via generated Makefile." | colorify $YELLOW
+
+    # Place the MOAI executable in a convenient location:
+    cp "$BUILD_FOLDER/dependencies/external/moai-dev/cmake/host-sdl/moai" "$BUILD_FOLDER/moai"
+
     cd ..
 }
 
