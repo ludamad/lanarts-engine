@@ -6,6 +6,8 @@ extern "C" {
 int luayaml_module(lua_State* L);
 // From dependency lpeg:
 int luaopen_lpeg(lua_State* L);
+// From dependency linenoise:
+int luaopen_linenoise(lua_State* L);
 }
 
 static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name) {
@@ -18,4 +20,5 @@ static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name
 void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luayaml_module, "yaml");
 	lua_extend(L, luaopen_lpeg, "lpeg");
+	lua_extend(L, luaopen_linenoise, "linenoise");
 }

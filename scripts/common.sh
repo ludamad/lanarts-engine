@@ -14,6 +14,7 @@ set -e # Good practice -- exit completely on any bad exit code
 SCRIPT_FOLDER=scripts
 DEPENDENCIES_FOLDER=dependencies
 EXTERNAL_DEPENDENCIES_FOLDER=dependencies/external
+BUNDLED_DEPENDENCIES_FOLDER=dependencies/bundled
 PATCHES_FOLDER=dependencies/patches
 
 ###############################################################################

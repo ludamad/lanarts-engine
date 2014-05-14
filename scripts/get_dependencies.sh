@@ -86,8 +86,8 @@ echo "Adjusting MOAI LuaJIT version..."
 
 cd "$BASE_FOLDER"
 
-LUAJIT="$EXTERNAL_DEPENDENCIES_FOLDER/luajit-2.0"
-MOAI_DEV="$EXTERNAL_DEPENDENCIES_FOLDER/moai-dev"
+LUAJIT="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/luajit-2.0"
+MOAI_DEV="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/moai-dev"
 
 # Use wildcard expansion to find the LuaJIT folder:
 MOAI_DEV_LUAJIT=$(echo "$EXTERNAL_DEPENDENCIES_FOLDER/moai-dev/3rdparty/LuaJIT"*)
@@ -99,20 +99,38 @@ cp -r "$LUAJIT" "$MOAI_DEV_LUAJIT"
 echo "Replaced $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $YELLOW
 
 ###############################################################################
-# Place all Lua dependencies into a single '.zip' file, called 'lua-deps.zip'.
+# Place all Lua dependencies into a folder, called 'lua-deps'.
+# Additionally, package this into a single '.zip' file, called 'lua-deps.zip'.
 ###############################################################################
 
-MOONSCRIPT="$EXTERNAL_DEPENDENCIES_FOLDER/moonscript"
-PENLIGHT="$EXTERNAL_DEPENDENCIES_FOLDER/Penlight"
-BUSTED="$EXTERNAL_DEPENDENCIES_FOLDER/busted"
+MOONSCRIPT="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/moonscript"
+PENLIGHT="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/Penlight"
+BUSTED="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/busted"
+MOBDEBUG_DOT_LUA="$BASE_FOLDER/$BUNDLED_DEPENDENCIES_FOLDER/mobdebug/mobdebug.lua"
+LUA_REPL="$BASE_FOLDER/$BUNDLED_DEPENDENCIES_FOLDER/lua-repl"
 
-TEMP_DIR=$(mktemp -d)
+cd "$BASE_FOLDER/builds/"
 
-cp -r "$MOONSCRIPT/moonscript" "$TEMP_DIR"
-cp -r "$PENLIGHT/lua/pl" "$TEMP_DIR"
-cp -r "$BUSTED/src" "$TEMP_DIR/busted"
+rm -rf lua-deps/
+mkdir -p lua-deps/
 
-cd "$TEMP_DIR"
+# Moonscript:
+cp -r "$MOONSCRIPT/moonscript" lua-deps/
+# Penlight:
+cp -r "$PENLIGHT/lua/pl" lua-deps/
+# 'Busted' unit testing framework:
+cp -r "$BUSTED/src" lua-deps/busted
+# Lua debugger:
+cp "$MOBDEBUG_DOT_LUA" lua-deps/
+# LuaJIT Lua API:
+cp -r "$LUAJIT/src/jit/" lua-deps/
+# Lua REPL:
+cp -r "$LUA_REPL/repl" lua-deps/
+cp "$LUA_REPL/repl.lua" lua-deps/
 
+cd lua-deps/
+
+# Create a '.zip' file, obeying the directory structure:
 zip lua-deps.zip $(find . -name '*.lua')
-mv lua-deps.zip "$BASE_FOLDER/$DEPENDENCIES_FOLDER"
+# Move it to the parent folder:
+mv lua-deps.zip ..
