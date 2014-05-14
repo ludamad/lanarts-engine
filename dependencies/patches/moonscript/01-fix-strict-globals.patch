@@ -1,0 +1,16 @@
+diff --git a/moonscript/parse.lua b/moonscript/parse.lua
+index 6345859..f6bcd64 100644
+--- a/moonscript/parse.lua
++++ b/moonscript/parse.lua
+@@ -110,7 +110,10 @@ local function wrap_env(fn)
+ 
+ 	return setfenv(fn, setmetatable({}, {
+ 		__index = function(self, name)
+-			local value = env[name]
++                        local cached_index = getmetatable(_G).__index
++                        getmetatable(_G).__index = nil
++			local value = env[name] 
++                        getmetatable(_G).__index = cached_index
+ 			if value ~= nil then return value end
+ 
+ 			if name:match"^[A-Z][A-Za-z0-9]*$" then
