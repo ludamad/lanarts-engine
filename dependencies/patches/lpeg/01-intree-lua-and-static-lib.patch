@@ -1,0 +1,25 @@
+diff --git a/cmake/lua.cmake b/cmake/lua.cmake
+index 80bbc5f..d3e0793 100644
+--- a/cmake/lua.cmake
++++ b/cmake/lua.cmake
+@@ -113,7 +113,8 @@ macro ( _lua_module_helper is_install _name )
+     endif ()
+   else ()  # Lua C binary module
+     enable_language ( C )
+-    find_package ( Lua REQUIRED )
++    # Jiggling for Lanarts:
++    set ( LUA_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bundled/lua-5.1" )
+     include_directories ( ${LUA_INCLUDE_DIR} )
+ 
+     set ( _module "${_module}${CMAKE_SHARED_MODULE_SUFFIX}" )
+@@ -125,8 +126,8 @@ macro ( _lua_module_helper is_install _name )
+              "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_CFG_INTDIR}/${_module}" )
+     endforeach ()
+    
+-    add_library( ${_target} MODULE ${_MODULE_SRC})
+-    target_link_libraries ( ${_target} ${LUA_LIBRARY} ${_MODULE_LINK} )
++    add_library( ${_target} STATIC ${_MODULE_SRC})
++    #target_link_libraries ( ${_target} ${LUA_LIBRARY} ${_MODULE_LINK} )
+     set_target_properties ( ${_target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+                 "${_module_dir}" PREFIX "" OUTPUT_NAME "${_module_filenamebase}" )
+     if ( ${is_install} )

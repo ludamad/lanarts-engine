@@ -14,11 +14,7 @@ include_directories(
     "${HANDROLLED}" # for net
     "${HANDROLLED}/luawrap-lib/include"
     "${HANDROLLED}/sound-lib/include"
-    "${BUNDLED}/UnitTest++ "
-    "${BUNDLED}/yaml-cpp/include"
-    "${BUNDLED}/physfs/src"
-    "${BUNDLED}/physfs/extras"
-    "${BUNDLED}" # for rvo2 & luasocket}
+    "${BUNDLED}" # for rvo2 
 )
 
 add_library( lanarts-libs
@@ -31,6 +27,7 @@ target_link_libraries(lanarts-libs
     libxmi
     luayaml
     RVO
+    lpeg
 )
 
 

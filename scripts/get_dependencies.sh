@@ -98,3 +98,8 @@ rm -rf "$MOAI_DEV_LUAJIT"
 cp -r "$LUAJIT" "$MOAI_DEV_LUAJIT"
 echo "Replaced $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $YELLOW
 
+###############################################################################
+# Place all Lua dependencies into a single '.zip' file, called 'lua-deps.zip'.
+###############################################################################
+
+
