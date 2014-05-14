@@ -32,6 +32,7 @@ for dep in \
     'https://github.com/LuaDist/lpeg baf0dc90b9278360be719dbfb8e56d34ce3c61bd'  \
     'https://github.com/moai/moai-dev 96dd6bea85376eb15ec66a3a7675ffef405d07fa' \
     'https://github.com/stevedonovan/Penlight 3d905f096053da08c89a37cce35d96b7db1817ab' \
+    'https://github.com/leafo/moonscript 1527a5f696f1dda718f44bdd28b6615f2ab650cf' \
     'http://luajit.org/git/luajit-2.0.git 392b6c94ae4b969f7fc74b21501b5e884c002892' 
 do
     # Split our combined URL+commit:

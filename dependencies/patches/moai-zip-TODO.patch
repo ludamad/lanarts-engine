@@ -1,0 +1,283 @@
+diff --git a/src/zl-vfs/ZLVfsZipArchive.cpp b/src/zl-vfs/ZLVfsZipArchive.cpp
+index 28f3a3a..e5e3bef 100644
+--- a/src/zl-vfs/ZLVfsZipArchive.cpp
++++ b/src/zl-vfs/ZLVfsZipArchive.cpp
+@@ -17,7 +17,25 @@ using namespace std;
+ //================================================================//
+ // ZLVfsZipArchiveHeader
+ //================================================================//
+-	
++
++// Adapted from busybox/networking/wget.c:
++static bool safe_fread(void *ptr, size_t nmemb, FILE *stream) {
++	size_t ret;
++	char *p = (char*)ptr;
++
++ 	do {
++ 		clearerr(stream);
++		ret = fread(p, nmemb, 1, stream);
++		p += ret;
++		nmemb -= ret;
++	} while (nmemb > 0 && ferror(stream) && errno == EINTR);
++
++ 	return (nmemb == 0);
++}
++
++#define SAFE_FREAD
++#define SAFE_FSEEK
++
+ //----------------------------------------------------------------//
+ int ZLVfsZipArchiveHeader::FindAndRead ( FILE* file ) {
+ 
+@@ -31,14 +49,18 @@ int ZLVfsZipArchiveHeader::FindAndRead ( FILE* file ) {
+ 
+ 	fseek ( file, 0, SEEK_END );
+ 	filelen = ftell ( file );
+-	
+-	cursor = filelen - SCAN_BUFFER_SIZE;
++
++	if (filelen > SCAN_BUFFER_SIZE) {
++		cursor = filelen - SCAN_BUFFER_SIZE;
++	} else {
++		cursor = 4;
++	}
+ 	while ( cursor ) {
+ 		
+ 		scansize = (( cursor + SCAN_BUFFER_SIZE ) > filelen ) ? filelen - cursor : SCAN_BUFFER_SIZE;
+ 		
+ 		fseek ( file, cursor, SEEK_SET );
+-		fread ( buffer, scansize, 1, file );
++		safe_fread ( buffer, scansize, file );
+ 
+ 		for ( i = scansize - 4; i >= 0; --i ) {
+ 			
+@@ -47,14 +69,14 @@ int ZLVfsZipArchiveHeader::FindAndRead ( FILE* file ) {
+ 
+ 				fseek ( file, cursor + i, SEEK_SET );
+ 				
+-				fread ( &this->mSignature, 4, 1, file );
+-				fread ( &this->mDiskNumber, 2, 1, file );
+-				fread ( &this->mStartDisk, 2, 1, file );
+-				fread ( &this->mTotalDiskEntries, 2, 1, file );
+-				fread ( &this->mTotalEntries, 2, 1, file );
+-				fread ( &this->mCDSize, 4, 1, file );
+-				fread ( &this->mCDAddr, 4, 1, file );
+-				fread ( &this->mCommentLength, 2, 1, file );
++				safe_fread ( &this->mSignature, 4, file );
++				safe_fread ( &this->mDiskNumber, 2, file );
++				safe_fread ( &this->mStartDisk, 2, file );
++				safe_fread ( &this->mTotalDiskEntries, 2, file );
++				safe_fread ( &this->mTotalEntries, 2, file );
++				safe_fread ( &this->mCDSize, 4, file );
++				safe_fread ( &this->mCDAddr, 4, file );
++				safe_fread ( &this->mCommentLength, 2, file );
+ 				
+ 				return 0;
+ 			}
+@@ -72,26 +94,26 @@ int ZLVfsZipArchiveHeader::FindAndRead ( FILE* file ) {
+ //----------------------------------------------------------------//
+ int ZLVfsZipEntryHeader::Read ( FILE* file ) {
+ 	
+-	fread ( &this->mSignature, 4, 1, file );
++	safe_fread ( &this->mSignature, 4, file );
+ 	
+ 	if ( this->mSignature != ENTRY_HEADER_SIGNATURE ) return -1;
+ 	
+-	fread ( &this->mByVersion, 2, 1, file );
+-	fread ( &this->mVersionNeeded, 2, 1, file );
+-	fread ( &this->mFlag, 2, 1, file );
+-	fread ( &this->mCompression, 2, 1, file );
+-	fread ( &this->mLastModTime, 2, 1, file );
+-	fread ( &this->mLastModDate, 2, 1, file );
+-	fread ( &this->mCrc32, 4, 1, file );
+-	fread ( &this->mCompressedSize, 4, 1, file );
+-	fread ( &this->mUncompressedSize, 4, 1, file );
+-	fread ( &this->mNameLength, 2, 1, file );
+-	fread ( &this->mExtraFieldLength, 2, 1, file );
+-	fread ( &this->mCommentLength, 2, 1, file );
+-	fread ( &this->mDiskNumber, 2, 1, file );
+-	fread ( &this->mInternalAttributes, 2, 1, file );
+-	fread ( &this->mExternalAttributes, 4, 1, file );
+-	fread ( &this->mFileHeaderAddr, 4, 1, file );
++	safe_fread ( &this->mByVersion, 2, file );
++	safe_fread ( &this->mVersionNeeded, 2, file );
++	safe_fread ( &this->mFlag, 2, file );
++	safe_fread ( &this->mCompression, 2, file );
++	safe_fread ( &this->mLastModTime, 2, file );
++	safe_fread ( &this->mLastModDate, 2, file );
++	safe_fread ( &this->mCrc32, 4, file );
++	safe_fread ( &this->mCompressedSize, 4, file );
++	safe_fread ( &this->mUncompressedSize, 4, file );
++	safe_fread ( &this->mNameLength, 2, file );
++	safe_fread ( &this->mExtraFieldLength, 2, file );
++	safe_fread ( &this->mCommentLength, 2, file );
++	safe_fread ( &this->mDiskNumber, 2, file );
++	safe_fread ( &this->mInternalAttributes, 2, file );
++	safe_fread ( &this->mExternalAttributes, 4, file );
++	safe_fread ( &this->mFileHeaderAddr, 4, file );
+ 	
+ 	return 0;
+ }
+@@ -103,20 +125,20 @@ int ZLVfsZipEntryHeader::Read ( FILE* file ) {
+ //----------------------------------------------------------------//
+ int ZLVfsZipFileHeader::Read ( FILE* file ) {
+ 	
+-	fread ( &this->mSignature, 4, 1, file );
++	safe_fread ( &this->mSignature, 4, file );
+ 	
+ 	if ( this->mSignature != FILE_HEADER_SIGNATURE ) return -1;
+ 	
+-	fread ( &this->mVersionNeeded, 2, 1, file );
+-	fread ( &this->mFlag, 2, 1, file );
+-	fread ( &this->mCompression, 2, 1, file );
+-	fread ( &this->mLastModTime, 2, 1, file );
+-	fread ( &this->mLastModDate, 2, 1, file );
+-	fread ( &this->mCrc32, 4, 1, file );				// *not* to be trusted (Android)
+-	fread ( &this->mCompressedSize, 4, 1, file );		// *not* to be trusted (Android)
+-	fread ( &this->mUncompressedSize, 4, 1, file );	// *not* to be trusted (Android)
+-	fread ( &this->mNameLength, 2, 1, file );
+-	fread ( &this->mExtraFieldLength, 2, 1, file );
++	safe_fread ( &this->mVersionNeeded, 2, file );
++	safe_fread ( &this->mFlag, 2, file );
++	safe_fread ( &this->mCompression, 2, file );
++	safe_fread ( &this->mLastModTime, 2, file );
++	safe_fread ( &this->mLastModDate, 2, file );
++	safe_fread ( &this->mCrc32, 4, file );				// *not* to be trusted (Android)
++	safe_fread ( &this->mCompressedSize, 4, file );		// *not* to be trusted (Android)
++	safe_fread ( &this->mUncompressedSize, 4, file );	// *not* to be trusted (Android)
++	safe_fread ( &this->mNameLength, 2, file );
++	safe_fread ( &this->mExtraFieldLength, 2, file );
+ 	
+ 	return 0;
+ }
+@@ -305,7 +327,7 @@ int ZLVfsZipArchive::Open ( const char* filename ) {
+ 	if ( header.mTotalDiskEntries != header.mTotalEntries ) goto error; // unsupported
+ 	
+ 	// seek to top of central directory
+-	fseek ( file, header.mCDAddr, SEEK_SET );
++	if (fseek ( file, header.mCDAddr, SEEK_SET ) != 0) goto error; // Invalid arguments
+ 	
+ 	this->mFilename = filename;
+ 	this->mRoot = new ZLVfsZipFileDir ();
+@@ -321,7 +343,7 @@ int ZLVfsZipArchive::Open ( const char* filename ) {
+ 			nameBuffer = ( char* )realloc ( nameBuffer, nameBufferSize );
+ 		}
+ 		
+-		fread ( nameBuffer, entryHeader.mNameLength, 1, file );
++		safe_fread ( nameBuffer, entryHeader.mNameLength, file );
+ 		nameBuffer [ entryHeader.mNameLength ] = 0;
+ 		
+ 		// skip the extra field, etc.
+diff --git a/src/zl-vfs/ZLVfsZipArchive.h b/src/zl-vfs/ZLVfsZipArchive.h
+index a6fe907..bb9ee64 100644
+--- a/src/zl-vfs/ZLVfsZipArchive.h
++++ b/src/zl-vfs/ZLVfsZipArchive.h
+@@ -10,13 +10,13 @@
+ class ZLVfsZipArchiveHeader {
+ public:
+ 
+-	unsigned long	mSignature;			// 4 End of central directory signature = 0x06054b50
++	unsigned int	mSignature;			// 4 End of central directory signature = 0x06054b50
+ 	unsigned short	mDiskNumber;		// 2 Number of this disk
+ 	unsigned short	mStartDisk;			// 2 Disk where central directory starts
+ 	unsigned short	mTotalDiskEntries;	// 2 Total number of entries on disk
+ 	unsigned short	mTotalEntries;		// 2 Total number of central in archive
+-	unsigned long	mCDSize;			// 4 Size of central directory in bytes
+-	unsigned long	mCDAddr;			// 4 Offset of start of central directory, relative to start of archive
++	unsigned int	mCDSize;			// 4 Size of central directory in bytes
++	unsigned int	mCDAddr;			// 4 Offset of start of central directory, relative to start of archive
+ 	unsigned short	mCommentLength;		// 2 ZIP file comment length
+ 	
+ 	//----------------------------------------------------------------//
+@@ -29,23 +29,23 @@ public:
+ class ZLVfsZipEntryHeader {
+ public:
+ 
+-	unsigned long	mSignature;				// 4 Central directory file header signature = 0x02014b50
++	unsigned int	mSignature;				// 4 Central directory file header signature = 0x02014b50
+ 	unsigned short	mByVersion;				// 2 Version made by
+ 	unsigned short	mVersionNeeded;			// 2 Version needed to extract (minimum)
+ 	unsigned short	mFlag;					// 2 General purpose bit flag
+ 	unsigned short	mCompression;			// 2 Compression method
+ 	unsigned short	mLastModTime;			// 2 File last modification time
+ 	unsigned short	mLastModDate;			// 2 File last modification date
+-	unsigned long	mCrc32;					// 4 CRC-32
+-	unsigned long	mCompressedSize;		// 4 Compressed size
+-	unsigned long	mUncompressedSize;		// 4 Uncompressed size
++	unsigned int	mCrc32;					// 4 CRC-32
++	unsigned int	mCompressedSize;		// 4 Compressed size
++	unsigned int	mUncompressedSize;		// 4 Uncompressed size
+ 	unsigned short	mNameLength;			// 2 File name length (n)
+ 	unsigned short	mExtraFieldLength;		// 2 Extra field length (m)
+ 	unsigned short	mCommentLength;			// 2 File comment length (k)
+ 	unsigned short	mDiskNumber;			// 2 Disk number where file starts
+ 	unsigned short	mInternalAttributes;	// 2 Internal file attributes
+-	unsigned long	mExternalAttributes;	// 4 External file attributes
+-	unsigned long	mFileHeaderAddr;		// 4 Relative offset of file header
++	unsigned int	mExternalAttributes;	// 4 External file attributes
++	unsigned int	mFileHeaderAddr;		// 4 Relative offset of file header
+ 	
+ 	//----------------------------------------------------------------//
+ 	int		Read	( FILE* file );
+@@ -57,15 +57,15 @@ public:
+ class ZLVfsZipFileHeader {
+ public:
+ 
+-	unsigned long	mSignature;				// 4	Local file header signature = 0x04034b50 (read as a little-endian number)
++	unsigned int	mSignature;				// 4	Local file header signature = 0x04034b50 (read as a little-endian number)
+ 	unsigned short	mVersionNeeded;			// 2	Version needed to extract (minimum)
+ 	unsigned short	mFlag;					// 2	General purpose bit flag
+ 	unsigned short	mCompression;			// 2	Compression method
+ 	unsigned short	mLastModTime;			// 2	File last modification time
+ 	unsigned short	mLastModDate;			// 2	File last modification date
+-	unsigned long	mCrc32;					// 4	CRC-32 (*not* to be trusted - Android)
+-	unsigned long	mCompressedSize;		// 4	Compressed size (*not* to be trusted - Android)
+-	unsigned long	mUncompressedSize;		// 4	Uncompressed size (*not* to be trusted - Android)
++	unsigned int	mCrc32;					// 4	CRC-32 (*not* to be trusted - Android)
++	unsigned int	mCompressedSize;		// 4	Compressed size (*not* to be trusted - Android)
++	unsigned int	mUncompressedSize;		// 4	Uncompressed size (*not* to be trusted - Android)
+ 	unsigned short	mNameLength;			// 2	File name length
+ 	unsigned short	mExtraFieldLength;		// 2	Extra field length
+ 
+@@ -80,11 +80,11 @@ class ZLVfsZipFileEntry {
+ public:
+ 
+ 	std::string		mName;
+-	unsigned long	mFileHeaderAddr;
+-	unsigned long	mCrc32;
++	unsigned int	mFileHeaderAddr;
++	unsigned int	mCrc32;
+ 	unsigned short	mCompression;
+-	unsigned long	mCompressedSize;
+-	unsigned long	mUncompressedSize;
++	unsigned int	mCompressedSize;
++	unsigned int	mUncompressedSize;
+ 	
+ 	ZLVfsZipFileEntry*	mNext;
+ };
+@@ -138,4 +138,4 @@ public:
+ 							~ZLVfsZipArchive	();
+ };
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/src/zl-vfs/headers.cpp b/src/zl-vfs/headers.cpp
+index 99cb602..316694e 100644
+--- a/src/zl-vfs/headers.cpp
++++ b/src/zl-vfs/headers.cpp
+@@ -194,6 +194,7 @@ int zl_get_stat ( char const* path, zl_stat* filestat ) {
+ 
+ 			entry = parentDir->mChildFiles;
+ 			for ( ; entry; entry = entry->mNext ) {
++				printf("Got entry '%s'\n", entry->mName.c_str ());
+ 				if ( strcmp_ignore_case ( entry->mName.c_str (), filename ) == 0 ) break;
+ 			}
+ 
+@@ -757,4 +758,4 @@ int zl_vfprintf ( ZLFILE* fp, const char* format, va_list arg ) {
+ 		return file->VarPrintf ( format, arg );
+ 	}
+ 	return -1;
+-}
+\ No newline at end of file
++}

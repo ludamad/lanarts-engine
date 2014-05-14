@@ -1,3 +1,2 @@
 dependencies/external/*
-builds/native
-builds/mingw32
+builds/

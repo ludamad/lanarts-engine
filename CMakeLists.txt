@@ -50,8 +50,9 @@ endif()
 # Enable tests
 enable_testing()
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/bundled/lua-5.1")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/bundled/")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bundled/lua-5.1")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bundled/")
 
-add_subdirectory( ../src "${CMAKE_CURRENT_BINARY_DIR}/src" ) 
-add_subdirectory( ../dependencies "${CMAKE_CURRENT_BINARY_DIR}/dependencies" ) 
+add_subdirectory( src ) 
+add_subdirectory( dependencies ) 
+

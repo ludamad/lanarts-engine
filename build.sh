@@ -15,6 +15,8 @@ source "scripts/common.sh"
 BASE_FOLDER="$(pwd)"
 BUILD_ROOT="$BASE_FOLDER/builds"
 
+mkdir -p "$BUILD_ROOT"
+
 ##############################################################################
 # Eclipse options
 #   --eclipse/-e: Create eclipse project files. Exits immediately!
@@ -40,7 +42,7 @@ if handle_flag "--eclipse" || handle_flag "-e" ; then
     cd "$ECLIPSE_PATH"
 
     # Eclipse project creation
-    cmake -G"Eclipse CDT4 - Unix Makefiles" "$BUILD_ROOT"
+    cmake -G"Eclipse CDT4 - Unix Makefiles" "$BASE_FOLDER"
 
     echo "Created Eclipse project files in \"$ECLIPSE_PATH\"." | colorify $YELLOW
     exit
@@ -108,7 +110,7 @@ function run_cmake() {
         -DMOAI_UNTZ=TRUE \
         -DMOAI_LUAJIT=$USE_LUAJIT \
         -DMOAI_HTTP_CLIENT=TRUE \
-        -DCMAKE_BUILD_TYPE=$BUILD_TYPE "$BUILD_ROOT"
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE "$BASE_FOLDER"
     echo "Configured build via CMake." | colorify $YELLOW
 }
 
