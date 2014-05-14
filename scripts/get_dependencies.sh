@@ -102,4 +102,17 @@ echo "Replaced $MOAI_DEV_LUAJIT with $LUAJIT" | colorify $YELLOW
 # Place all Lua dependencies into a single '.zip' file, called 'lua-deps.zip'.
 ###############################################################################
 
+MOONSCRIPT="$EXTERNAL_DEPENDENCIES_FOLDER/moonscript"
+PENLIGHT="$EXTERNAL_DEPENDENCIES_FOLDER/Penlight"
+BUSTED="$EXTERNAL_DEPENDENCIES_FOLDER/busted"
 
+TEMP_DIR=$(mktemp -d)
+
+cp -r "$MOONSCRIPT/moonscript" "$TEMP_DIR"
+cp -r "$PENLIGHT/lua/pl" "$TEMP_DIR"
+cp -r "$BUSTED/src" "$TEMP_DIR/busted"
+
+cd "$TEMP_DIR"
+
+zip lua-deps.zip $(find . -name '*.lua')
+mv lua-deps.zip "$BASE_FOLDER/$DEPENDENCIES_FOLDER"
