@@ -28,6 +28,7 @@ target_link_libraries(lanarts-libs
     luayaml
     RVO
     lpeg
+    luv
     lualinenoise
 )
 

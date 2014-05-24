@@ -142,7 +142,7 @@ function build_engine(){
     # Place the MOAI executable in a convenient location:
     cp "$BUILD_FOLDER/dependencies/external/moai-dev/cmake/host-sdl/moai" "$BUILD_FOLDER/moai"
 
-    cd ..
+    cd "$BASE_FOLDER"
 }
 
 ###############################################################################
@@ -155,3 +155,39 @@ else
    build_engine
 fi
 
+##############################################################################
+# Install options, requires a built engine.
+#   --install/-i: Install, with dependencies, to specified folder.
+###############################################################################
+
+# Install as generic runner
+if handle_flag "--install" || handle_flag "-i" ; then
+
+    read -e -p "Where would you like to install the Lanarts runner? " RUNNER_PATH
+    echo "Creating Lanarts runner in \"$RUNNER_PATH\" ..." | colorify $LIGHT_BLUE
+
+    if [ ! -e "$RUNNER_PATH" ] ; then
+        while true; do
+            read -p "Path does not exist, create it? " yn
+            case $yn in
+                [Yy]* ) mkdir -p "$RUNNER_PATH" ; break;;
+                [Nn]* ) exit;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+
+    # Get absolute path to $RUNNER_PATH:
+    RUNNER_PATH=`readlink -f "$RUNNER_PATH"`
+
+    cp "$BUILD_FOLDER/moai" "$RUNNER_PATH/moai"
+    cp "$BUILD_ROOT/lua-deps.zip" "$RUNNER_PATH/.lua-deps.zip"
+    cp "$BASE_FOLDER/src/main.lua" "$RUNNER_PATH/main.lua"
+    cat "$BASE_FOLDER/scripts/lanarts-runner-template.sh" | \
+        sed "s@__BASE_FOLDER@$RUNNER_PATH@g" > "$RUNNER_PATH/lanarts"
+
+    chmod a+x "$RUNNER_PATH/lanarts"
+
+    echo "Created Lanarts runner in \"$RUNNER_PATH\"." | colorify $YELLOW
+    exit
+fi
