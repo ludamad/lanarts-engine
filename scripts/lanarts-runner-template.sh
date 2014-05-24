@@ -9,4 +9,4 @@ set -u # Robustness
 
 export LANARTS_BASE_FOLDER=__BASE_FOLDER # To be replaced by --install!
 
-"$LANARTS_BASE_FOLDER/moai" "$LANARTS_BASE_FOLDER/main.lua" $@
+"$LANARTS_BASE_FOLDER/moai" "$LANARTS_BASE_FOLDER/loader.lua" "$LANARTS_BASE_FOLDER" $@

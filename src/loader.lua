@@ -1,10 +1,24 @@
 -------------------------------------------------------------------------------
+-- Global utilities required for bootstrap.
+-- Specifically, this is used in our 'require' logic.
+-------------------------------------------------------------------------------
+
+-- Lua string API extension:
+function string:split(sep) 
+    local t = {}
+    self:gsub(("([^%s]+)"):format(sep), 
+        function(s) table.insert(t, s) end
+    )
+    return t 
+end
+
+-------------------------------------------------------------------------------
 -- Find base path.
 -- Ensure files from src/ are loaded, and that we do not load any system files.
 -------------------------------------------------------------------------------
 
--- Taken from command-line:
-local BASE_FOLDER = (args[1] or ".")
+-- Taken from command-line, or defaults to current folder.
+local BASE_FOLDER = (arg[1] or ".")
 
 package.cpath = ''
 package.path = '?.lua;src/?.lua;' .. BASE_FOLDER .. "/.lua-deps/?.lua"
@@ -23,8 +37,8 @@ end
 -- 
 -- TODO: Integrate MOAIFileSystem with ErrorReporting.
 
-local success = MOAIFileSystem.mountVirtualDirectory("lua-deps", BASE_FOLDER .. ".lua-deps.zip")
-assert(success, "Could not mount lua-deps.zip!")
+local success = MOAIFileSystem.mountVirtualDirectory("lua-deps", BASE_FOLDER .. "/.lua-deps.zip")
+assert(success, "Could not mount " .. BASE_FOLDER .. "/.lua-deps.zip!")
 
 -------------------------------------------------------------------------------
 -- Make 'require' aware of the MOAI filesystem.
@@ -54,7 +68,6 @@ local function require_moai_directory(vpath)
 
     local dpath = vpath:gsub('%.', '/') 
 
-    -- Return an object representing a path, or nil if not existent:
     for _, root in ipairs(package.path:split ';') do
         local obj = required_directory(vpath, root:gsub('%?%.lua', dpath))
         if obj then 
@@ -109,13 +122,6 @@ table.insert(package.loaders, require_moai_file)
 MOAILogMgr.setLogLevel(MOAILogMgr.LOG_NONE)
 
 -------------------------------------------------------------------------------
--- Ensure proper loading of moonscript files (requires lua-deps.zip to be 
--- mounted).
--------------------------------------------------------------------------------
-
-require("moonscript.base").insert_loader()
-
--------------------------------------------------------------------------------
 -- Ensure undefined global access is an error.
 -------------------------------------------------------------------------------
 
@@ -125,12 +131,6 @@ setmetatable(_G, global_meta)
 function global_meta:__index(k)
     error("Undefined global variable '" .. k .. "'!")
 end
-
--------------------------------------------------------------------------------
--- Define global utilities.
--------------------------------------------------------------------------------
-
-require "global_utils"
 
 -------------------------------------------------------------------------------
 -- Are we a debug server? 
@@ -143,12 +143,10 @@ if os.getenv('DEBUG_SERVER') then
 end
 
 -------------------------------------------------------------------------------
--- Finally, if we are not a debug server, run the game.
+-- Finally, if we are not a debug server, run the file provided by command-line.
+-- We default to loading the 'main' module.
 -------------------------------------------------------------------------------
 
-local ErrorReporting = require "system.ErrorReporting"
+local main_module = arg[2] or 'main'
 
-local module = os.getenv("f") or "game"
-ErrorReporting.report(function() 
-    require(module)
-end)
+require(main_module)
