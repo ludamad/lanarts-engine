@@ -1,0 +1,16 @@
+diff --git a/3rdparty/luasocket-2.0.2-embed/fullluasocket.c b/3rdparty/luasocket-2.0.2-embed/fullluasocket.c
+index 7ae33bf..0dbd402 100644
+--- a/3rdparty/luasocket-2.0.2-embed/fullluasocket.c
++++ b/3rdparty/luasocket-2.0.2-embed/fullluasocket.c
+@@ -13,8 +13,9 @@ LUAPRELOAD_API int luapreload_fullluasocket(lua_State *L) {
+ 	lua_setfield(L, -2, "socket.core");
+ 	lua_pushcfunction(L, luaopen_mime_core);
+ 	lua_setfield(L, -2, "mime.core");
+-	lua_pushcfunction(L, luaopen_ltn12);
+-	lua_setfield(L, -2, "ltn12");
++        /* AD: ltn12 was broken, make sure custom copy is used: */
++        /*lua_pushcfunction(L, luaopen_ltn12); */
++        /* lua_setfield(L, -2, "ltn12"); */
+ 	lua_pushcfunction(L, luaopen_mime);
+ 	lua_setfield(L, -2, "mime");
+ 	lua_pushcfunction(L, luaopen_socket);

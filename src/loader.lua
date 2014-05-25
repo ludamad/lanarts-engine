@@ -1,4 +1,21 @@
 -------------------------------------------------------------------------------
+-- Find base path.
+-- Ensure files from src/ are loaded, and that we do not load any system files.
+-------------------------------------------------------------------------------
+
+-- Taken from command-line, or defaults to current folder.
+local command_line_args = arg
+local BASE_FOLDER = (command_line_args[1] or ".")
+
+package.cpath = ''
+package.path = '?.lua;src/?.lua;' .. BASE_FOLDER .. "/.lua-deps/?.lua"
+
+-- Additional path component from environment variable:
+if os.getenv("p") then
+    package.path = package.path .. ';' .. os.getenv("p")
+end
+
+-------------------------------------------------------------------------------
 -- Global utilities required for bootstrap.
 -- Specifically, this is used in our 'require' logic.
 -------------------------------------------------------------------------------
@@ -10,22 +27,6 @@ function string:split(sep)
         function(s) table.insert(t, s) end
     )
     return t 
-end
-
--------------------------------------------------------------------------------
--- Find base path.
--- Ensure files from src/ are loaded, and that we do not load any system files.
--------------------------------------------------------------------------------
-
--- Taken from command-line, or defaults to current folder.
-local BASE_FOLDER = (arg[1] or ".")
-
-package.cpath = ''
-package.path = '?.lua;src/?.lua;' .. BASE_FOLDER .. "/.lua-deps/?.lua"
-
--- Additional path component from environment variable:
-if os.getenv("p") then
-    package.path = package.path .. ';' .. os.getenv("p")
 end
 
 -------------------------------------------------------------------------------
@@ -131,15 +132,67 @@ setmetatable(_G, global_meta)
 function global_meta:__index(k)
     error("Undefined global variable '" .. k .. "'!")
 end
+-------------------------------------------------------------------------------
+-- Expose 'inspect', which brings up the interactive shell.
+-- Places any passed value in the global 'VAL'.
+-------------------------------------------------------------------------------
+
+local repl = require "repl.console"
+
+for _, plugin in ipairs { 'linenoise', 'history', 'completion', 'autoreturn' } do
+    repl:loadplugin(plugin)
+end
+
+function inspect(val)
+    _G.VAL = val
+    local r = repl:clone()
+    function r:run()
+        self:prompt(1)
+        for line in self:lines() do
+            if line:trim() == "q" or line:trim() == "quit" then 
+                return
+            end
+            local level = self:handleline(line)
+            self:prompt(level)
+        end
+        self:shutdown()
+    end
+    r:run()
+end
+
+-------------------------------------------------------------------------------
+-- Handle '-e <argument>' flag. 
+-------------------------------------------------------------------------------
+
+local function get_param(flag)
+    for i,v in pairs(command_line_args) do
+        if v == flag then
+            return command_line_args[i+1]
+        end
+    end
+    return nil
+end
+
+local exec_argument = get_param("-e")
+if exec_argument then
+    local f, err = loadstring(exec_argument)
+    if not f then
+        print("Error when processing '-e' flag, given string:")
+        print(exec_argument) 
+        error(err) 
+    end
+    -- Run the passed string:
+    f()
+end
 
 -------------------------------------------------------------------------------
 -- Are we a debug server? 
 -------------------------------------------------------------------------------
 
-if os.getenv('DEBUG_SERVER') then 
+if os.getenv('LANARTS_MOBDEBUG_SERVER') then 
     -- Run a debug server:
     require("mobdebug").listen()
-    return
+    return -- Do not attempt normal loading
 end
 
 -------------------------------------------------------------------------------
@@ -147,6 +200,11 @@ end
 -- We default to loading the 'main' module.
 -------------------------------------------------------------------------------
 
-local main_module = arg[2] or 'main'
+local main_module = command_line_args[#command_line_args] or 'main'
 
-require(main_module)
+-- If we are passed a .lua file, be more literal:
+if main_module:match("%.lua$") then
+    dofile(main_module)
+else
+    require(main_module)
+end

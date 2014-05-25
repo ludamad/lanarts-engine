@@ -107,6 +107,8 @@ MOONSCRIPT="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/moonscript"
 PENLIGHT="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/Penlight"
 BUSTED="$BASE_FOLDER/$EXTERNAL_DEPENDENCIES_FOLDER/busted"
 MOBDEBUG_DOT_LUA="$BASE_FOLDER/$BUNDLED_DEPENDENCIES_FOLDER/mobdebug/mobdebug.lua"
+LTN12_DOT_LUA="$BASE_FOLDER/$BUNDLED_DEPENDENCIES_FOLDER/ltn12.lua"
+SIERRA_DEBUG="$BASE_FOLDER/$BUNDLED_DEPENDENCIES_FOLDER/sierradebug"
 LUA_REPL="$BASE_FOLDER/$BUNDLED_DEPENDENCIES_FOLDER/lua-repl"
 
 cd "$BASE_FOLDER/builds/"
@@ -120,8 +122,12 @@ cp -r "$MOONSCRIPT/moonscript" lua-deps/
 cp -r "$PENLIGHT/lua/pl" lua-deps/
 # 'Busted' unit testing framework:
 cp -r "$BUSTED/src" lua-deps/busted
-# Lua debugger:
+# MOB Lua debugger:
 cp "$MOBDEBUG_DOT_LUA" lua-deps/
+# ltn12 fix for luasocket:
+cp "$LTN12_DOT_LUA" lua-deps/
+# Sierra Lua debugger:
+cp "$SIERRA_DEBUG"/* lua-deps/
 # LuaJIT Lua API:
 cp -r "$LUAJIT/src/jit/" lua-deps/
 # Lua REPL:

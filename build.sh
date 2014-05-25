@@ -166,6 +166,8 @@ function package_runner(){
 
     cp "$BUILD_FOLDER/moai" "$RUNNER_PATH/moai"
     cp "$BUILD_ROOT/lua-deps.zip" "$RUNNER_PATH/.lua-deps.zip"
+    # Ensure .lua-deps is copied over correctly:
+    rm -rf "$RUNNER_PATH/.lua-deps"
     cp -r "$BUILD_ROOT/lua-deps" "$RUNNER_PATH/.lua-deps"
     cp "$BASE_FOLDER/src/loader.lua" "$RUNNER_PATH/loader.lua"
     cat "$BASE_FOLDER/scripts/lanarts-runner-template.sh" | \
