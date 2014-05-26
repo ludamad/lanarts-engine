@@ -44,28 +44,30 @@ do
     echo "Cloning $URL into \"$EXTERNAL_DEPENDENCIES_FOLDER\"" | colorify $LIGHT_BLUE
 
     # Avoid doing anything if the location already exists:
-    if [ -e $folder ] ; then
-        echo "$URL already exists. Continuing." | colorify $YELLOW
-        continue
+    if [ ! -e $folder ] ; then
+        # If the location did not exist, clone into it 
+        git clone "$URL"
+    else
+        echo "$URL already cloned. Not cloning." | colorify $YELLOW
     fi
 
-    # If the location did not exist, clone into it and checkout the desired commit.
-    git clone "$URL"
-
+    # Check-out the desired commit
     echo "Checking out commit \"$commit\" for \"$URL\" ..." | colorify $LIGHT_BLUE
     cd "$folder"
     git checkout --quiet "$commit"
     echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $YELLOW
+
+    # Reset any previously applied patches
+    git checkout .
 
     ###############################################################################
     # If we cloned a subrepository (external dependency), apply the patches in 
     # dependencies/patches/<repo name> folder.
     ###############################################################################
 
-    P="$BASE_FOLDER/$PATCHES_FOLDER/$folder"
-    if [ -e "$P" ] ; then
+    PP="$BASE_FOLDER/$PATCHES_FOLDER/$folder"
+    if [ -e "$PP" ] ; then
         echo "Applying patches for $(pwd) ..." | colorify $LIGHT_BLUE
-        PP="$P/$patch_folder"
         for patch_file in $(ls "$PP") ; do
             echo "Applying $PP/$patch_file to $(pwd)" | colorify $LIGHT_BLUE
             patch -p1 < "$PP/$patch_file"
