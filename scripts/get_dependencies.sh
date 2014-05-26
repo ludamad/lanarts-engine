@@ -14,6 +14,11 @@ cd "`dirname "$0"`"/..
 source "scripts/common.sh"
 
 BASE_FOLDER="$(pwd)"
+# Should we re-checkout every dependency, and patch them?
+REPATCH_CHECKOUTS=false
+if handle_flag "--repatch" || handle_flag "-r" ; then
+    REPATCH_CHECKOUTS=true
+fi
 
 # Ensure external dependency folder exists:
 mkdir -p "$EXTERNAL_DEPENDENCIES_FOLDER"
@@ -47,35 +52,38 @@ do
     if [ ! -e $folder ] ; then
         # If the location did not exist, clone into it 
         git clone "$URL"
+        do_checkout_and_patch=true
     else
         echo "$URL already cloned. Not cloning." | colorify $YELLOW
+        do_checkout_and_patch=$REPATCH_CHECKOUTS
     fi
 
-    # Check-out the desired commit
-    echo "Checking out commit \"$commit\" for \"$URL\" ..." | colorify $LIGHT_BLUE
-    cd "$folder"
-    git checkout --quiet "$commit"
-    echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $YELLOW
+    if $do_checkout_and_patch ; then
+        # Check-out the desired commit
+        echo "Checking out commit \"$commit\" for \"$URL\" ..." | colorify $LIGHT_BLUE
+        cd "$folder"
+        git checkout --quiet "$commit"
+        echo "Checked out commit \"$commit\" for \"$URL\"." | colorify $YELLOW
+        # Reset any previously applied patches
+        git checkout .
 
-    # Reset any previously applied patches
-    git checkout .
+        ###############################################################################
+        # If we cloned a subrepository (external dependency), apply the patches in 
+        # dependencies/patches/<repo name> folder.
+        ###############################################################################
 
-    ###############################################################################
-    # If we cloned a subrepository (external dependency), apply the patches in 
-    # dependencies/patches/<repo name> folder.
-    ###############################################################################
+        PP="$BASE_FOLDER/$PATCHES_FOLDER/$folder"
+        if [ -e "$PP" ] ; then
+            echo "Applying patches for $(pwd) ..." | colorify $LIGHT_BLUE
+            for patch_file in $(ls "$PP") ; do
+                echo "Applying $PP/$patch_file to $(pwd)" | colorify $LIGHT_BLUE
+                patch -p1 < "$PP/$patch_file"
+            done
+            echo "Applied patches for $(pwd)." | colorify $YELLOW
+        fi
 
-    PP="$BASE_FOLDER/$PATCHES_FOLDER/$folder"
-    if [ -e "$PP" ] ; then
-        echo "Applying patches for $(pwd) ..." | colorify $LIGHT_BLUE
-        for patch_file in $(ls "$PP") ; do
-            echo "Applying $PP/$patch_file to $(pwd)" | colorify $LIGHT_BLUE
-            patch -p1 < "$PP/$patch_file"
-        done
-        echo "Applied patches for $(pwd)." | colorify $YELLOW
+        cd ..
     fi
-
-    cd ..
 done
 
 echo "Done grabbing dependencies!"

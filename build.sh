@@ -78,7 +78,7 @@ fi
 # Download the dependencies if they have not yet been downloaded.
 ###############################################################################
 
-bash ./scripts/get_dependencies.sh
+bash ./scripts/get_dependencies.sh "$@"
 
 ###############################################################################
 # Function to run CMake. Specify configuration settings for MOAI.

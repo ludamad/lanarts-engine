@@ -123,16 +123,6 @@ table.insert(package.loaders, require_moai_file)
 MOAILogMgr.setLogLevel(MOAILogMgr.LOG_NONE)
 
 -------------------------------------------------------------------------------
--- Ensure undefined global access is an error.
--------------------------------------------------------------------------------
-
-local global_meta = {}
-setmetatable(_G, global_meta)
-
-function global_meta:__index(k)
-    error("Undefined global variable '" .. k .. "'!")
-end
--------------------------------------------------------------------------------
 -- Expose 'inspect', which brings up the interactive shell.
 -- Places any passed value in the global 'VAL'.
 -------------------------------------------------------------------------------
