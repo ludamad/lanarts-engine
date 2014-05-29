@@ -1,0 +1,36 @@
+diff --git a/src/host-modules/aku_modules.cpp b/src/host-modules/aku_modules.cpp
+index 7251908..35fb07e 100644
+--- a/src/host-modules/aku_modules.cpp
++++ b/src/host-modules/aku_modules.cpp
+@@ -179,7 +179,10 @@ void AKUModulesContextInitialize () {
+ 
+ //----------------------------------------------------------------//
+ void AKUModulesParseArgs ( int argc, char** argv ) {
+-
++        if ( argc < 2 ) {
++            AKURunScript ( "loader.lua" );
++            return;
++        }
+ 	#if AKU_WITH_TEST
+ 
+ 		int total = argc - 1;
+@@ -225,11 +228,10 @@ void AKUModulesParseArgs ( int argc, char** argv ) {
+ 		for ( ; i < argc; ++i ) {
+ 			AKUTestRunScript ( argv [ i ]);
+ 		}
+-		
+ 	#else
+ 	
+ 		if ( argc < 2 ) {
+-			AKURunScript ( "main.lua" );
++			AKURunScript ( "loader.lua" );
+ 		}
+ 		else {
+ 
+@@ -299,4 +301,4 @@ void AKUModulesResume () {
+ 	#if AKU_WITH_SIM
+ 		AKUPause ( false );
+ 	#endif
+-}
+\ No newline at end of file
++}

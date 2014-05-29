@@ -4,7 +4,7 @@
 -------------------------------------------------------------------------------
 
 -- Taken from command-line, or defaults to current folder.
-local command_line_args = arg
+local command_line_args = arg or {}
 local BASE_FOLDER = (command_line_args[1] or ".")
 
 package.cpath = ''
@@ -39,7 +39,9 @@ end
 -- TODO: Integrate MOAIFileSystem with ErrorReporting.
 
 local success = MOAIFileSystem.mountVirtualDirectory("lua-deps", BASE_FOLDER .. "/.lua-deps.zip")
-assert(success, "Could not mount " .. BASE_FOLDER .. "/.lua-deps.zip!")
+if not success then
+    print("Note: Not mounting " .. BASE_FOLDER .. "/.lua-deps.zip")
+end
 
 -------------------------------------------------------------------------------
 -- Make 'require' aware of the MOAI filesystem.

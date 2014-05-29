@@ -169,6 +169,7 @@ function package_runner(){
     RUNNER_PATH="$BUILD_ROOT/dist/"
     mkdir -p "$RUNNER_PATH"
 
+    cp "$BASE_FOLDER/scripts/moai-wine-bridge.sh" "$RUNNER_PATH/moai"
     cp "$BUILD_FOLDER/$EXE_NAME" "$RUNNER_PATH/$EXE_NAME"
     cp "$BUILD_ROOT/lua-deps.zip" "$RUNNER_PATH/.lua-deps.zip"
     # Ensure .lua-deps is copied over correctly:
