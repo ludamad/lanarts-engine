@@ -254,7 +254,7 @@ else()
     endif()
 endif()
 
-add_library(uv ${UV_SRCS})
+add_library(uv STATIC ${UV_SRCS})
 
 
 # Tests

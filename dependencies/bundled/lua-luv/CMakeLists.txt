@@ -9,7 +9,7 @@ set(VERSION_MINOR 1)
 # configurable options
 set(USE_ZMQ OFF)
 set(USE_HTTP OFF)
-set(USE_STRICT ON)
+set(USE_STRICT OFF)
 
 option(USE_ZMQ "Include zmq" ${USE_ZMQ})
 option(USE_HTTP "Include http" ${USE_HTTP})
@@ -47,7 +47,7 @@ list(APPEND LIBS ${CMAKE_THREAD_LIBS_INIT})
 file(COPY "${PROJECT_SOURCE_DIR}/cmake/uv/CMakeLists.txt"
   DESTINATION "${PROJECT_SOURCE_DIR}/src/uv")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/uv")
-list(APPEND LIBS uv rt)
+list(APPEND LIBS uv)
 
 # build libzmq
 if(USE_ZMQ)

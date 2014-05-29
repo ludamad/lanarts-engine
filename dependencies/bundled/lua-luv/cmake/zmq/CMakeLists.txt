@@ -214,16 +214,16 @@ add_custom_command(
 # output
 
 
-if (UNIX)
-	add_library(zmq STATIC ${sources} ${PROJECT_BINARY_DIR}/NSIS.template.in)
-	find_package(Threads REQUIRED)
-	target_link_libraries(zmq stdc++ ${CMAKE_THREAD_LIBS_INIT} rt)
-	#set_target_properties(libzmq PROPERTIES PREFIX "")
-else ()
+if (WIN32)
     add_library(libzmq STATIC ${sources} ${PROJECT_BINARY_DIR}/NSIS.template.in)
-	target_link_libraries(libzmq ws2_32.lib rpcrt4.lib)
-	set_target_properties(libzmq PROPERTIES RELEASE_POSTFIX "${_zmq_COMPILER}-mt" DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd")
-endif (UNIX)
+    target_link_libraries(libzmq ws2_32.lib rpcrt4.lib)
+    set_target_properties(libzmq PROPERTIES RELEASE_POSTFIX "${_zmq_COMPILER}-mt" DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd")
+else ()
+    add_library(zmq STATIC ${sources} ${PROJECT_BINARY_DIR}/NSIS.template.in)
+    find_package(Threads REQUIRED)
+    target_link_libraries(zmq stdc++ ${CMAKE_THREAD_LIBS_INIT} rt)
+    #set_target_properties(libzmq PROPERTIES PREFIX "")
+endif ()
 
 include (InstallRequiredSystemLibraries)
 

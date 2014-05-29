@@ -190,15 +190,12 @@ int getrusage(int who, struct rusage * rusage);
 typedef	void (*__p_sig_fn_t)(int);
 typedef int pid_t;
 
-#ifndef _SIGSET_T_
-#define _SIGSET_T_
 #ifdef _WIN64
 typedef unsigned long long _sigset_t;
 #else
 typedef unsigned long _sigset_t;
 #endif
 # define sigset_t _sigset_t
-#endif /* _SIGSET_T_ */
 
 struct sigaction {
     int          sa_flags;

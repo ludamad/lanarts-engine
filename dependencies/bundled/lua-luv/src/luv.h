@@ -318,7 +318,7 @@ extern luaL_Reg luv_zmq_socket_meths[32];
 extern "C" {
 #endif
 
-LUALIB_API int luaopen_luv(lua_State *L);
+int luaopen_luv(lua_State *L);
 
 #ifdef __cplusplus
 }

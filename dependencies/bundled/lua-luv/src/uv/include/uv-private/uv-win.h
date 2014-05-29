@@ -141,7 +141,10 @@ typedef intptr_t ssize_t;
                        LPOVERLAPPED lpOverlapped,
                        LPTRANSMIT_FILE_BUFFERS lpTransmitBuffers,
                        DWORD dwFlags);
+#endif
 
+// AD: Hack for mingw support
+#ifdef __MINGW32__
   typedef PVOID RTL_SRWLOCK;
   typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
 #endif
