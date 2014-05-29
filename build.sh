@@ -59,19 +59,24 @@ BUILD_WINDOWS=FALSE
 CMAKE_COMMAND=cmake
 MAKE_COMMAND=make
 BUILD_FOLDER="$BUILD_ROOT/native"
+EXE_NAME="moai"
 
 if handle_flag "--vanilla-lua" || handle_flag "-vl" ; then
     USE_LUAJIT=FALSE
 fi
-if handle_flag "--optimize" || handle_flag "-O" ; then
-    BUILD_TYPE=Release
-fi
+
 if handle_flag "--mingw32" || handle_flag "-M" ; then 
     CMAKE_COMMAND=mingw32-cmake
     MAKE_COMMAND=mingw32-make
     BUILD_FOLDER="$BUILD_ROOT/mingw32"
     BUILD_LINUX=FALSE
     BUILD_WINDOWS=TRUE
+    EXE_NAME="moai.exe"
+fi
+
+if handle_flag "--optimize" || handle_flag "-O" ; then
+    BUILD_TYPE=Release
+    BUILD_FOLDER="$BUILD_FOLDER-release"
 fi
 
 ###############################################################################
@@ -140,7 +145,7 @@ function build_engine(){
     echo "Built via generated Makefile." | colorify $YELLOW
 
     # Place the MOAI executable in a convenient location:
-    cp "$BUILD_FOLDER/dependencies/external/moai-dev/cmake/host-sdl/moai" "$BUILD_FOLDER/moai"
+    cp "$BUILD_FOLDER/dependencies/external/moai-dev/cmake/host-sdl/$EXE_NAME" "$BUILD_FOLDER/$EXE_NAME"
 
     cd "$BASE_FOLDER"
 }
@@ -164,7 +169,7 @@ function package_runner(){
     RUNNER_PATH="$BUILD_ROOT/dist/"
     mkdir -p "$RUNNER_PATH"
 
-    cp "$BUILD_FOLDER/moai" "$RUNNER_PATH/moai"
+    cp "$BUILD_FOLDER/$EXE_NAME" "$RUNNER_PATH/$EXE_NAME"
     cp "$BUILD_ROOT/lua-deps.zip" "$RUNNER_PATH/.lua-deps.zip"
     # Ensure .lua-deps is copied over correctly:
     rm -rf "$RUNNER_PATH/.lua-deps"
