@@ -24,6 +24,7 @@ add_library( lanarts-libs
 
 target_link_libraries(lanarts-libs
     enet
+    lua_enet
     libxmi
     luayaml
     RVO

@@ -7,8 +7,8 @@ set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)
 
 # configurable options
-set(USE_ZMQ OFF)
-set(USE_HTTP OFF)
+set(USE_ZMQ ON)
+set(USE_HTTP ON)
 set(USE_STRICT OFF)
 
 option(USE_ZMQ "Include zmq" ${USE_ZMQ})

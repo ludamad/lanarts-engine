@@ -7,6 +7,7 @@ add_subdirectory( external/lpeg )
 
 # Bundled dependencies. Other than 'enet', the libraries have been fiddled, CMake support added, etc.
 add_subdirectory( bundled/enet ) 
+add_subdirectory( bundled/lua-enet ) 
 add_subdirectory( bundled/lua-linenoise ) 
 add_subdirectory( bundled/libxmi ) 
 add_subdirectory( bundled/rvo2 ) 

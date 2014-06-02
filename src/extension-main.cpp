@@ -10,6 +10,7 @@ int luaopen_lpeg(lua_State* L);
 int luaopen_linenoise(lua_State* L);
 // From dependency luv:
 int luaopen_luv(lua_State* L);
+int luaopen_enet(lua_State* L);
 }
 
 static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name) {
@@ -24,4 +25,5 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luaopen_lpeg, "lpeg");
 	lua_extend(L, luaopen_linenoise, "linenoise");
 	lua_extend(L, luaopen_luv, "luv");
+	lua_extend(L, luaopen_luv, "enet");
 }
