@@ -95,7 +95,7 @@ function run_cmake() {
         -DBUILD_LINUX=$BUILD_LINUX \
         -DBUILD_WINDOWS=$BUILD_WINDOWS \
         -DSDL_HOST=TRUE \
-        -DMOAI_BOX2D=TRUE \
+        -DMOAI_BOX2D=FALSE \
         -DMOAI_CHIPMUNK=FALSE \
         -DMOAI_CURL=TRUE \
         -DMOAI_CRYPTO=TRUE \

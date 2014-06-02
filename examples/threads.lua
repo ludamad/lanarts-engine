@@ -1,3 +1,11 @@
+local enet = require "enet"
+
+for k,v in pairs(enet) do
+    print("enet", k,v)
+end
+
+
+
 local luv = require("luv")
 
 local t1 = luv.thread.spawn(function(id)
