@@ -250,14 +250,6 @@ static int host_create(lua_State *l) {
 	return 1;
 }
 
-static int linked_version(lua_State *l) {
-	lua_pushfstring(l, "%d.%d.%d",
-			ENET_VERSION_GET_MAJOR(enet_linked_version()),
-			ENET_VERSION_GET_MINOR(enet_linked_version()),
-			ENET_VERSION_GET_PATCH(enet_linked_version()));
-	return 1;
-}
-
 /**
  * Serice a host
  * Args:
@@ -669,7 +661,6 @@ static int peer_send(lua_State *l) {
 
 static const struct luaL_Reg enet_funcs [] = {
 	{"host_create", host_create},
-	{"linked_version", linked_version},
 	{NULL, NULL}
 };
 
