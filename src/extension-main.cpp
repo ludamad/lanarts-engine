@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <lua.hpp>
 
+#include <ldungeon_gen/lua_ldungeon.h>
+#include <lcommon/mtwist.h>
+#include <luawrap/luawrap.h>
+
 extern "C" {
 // From dependency lua-yaml:
 int luayaml_module(lua_State* L);
@@ -21,6 +25,8 @@ static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name
 	lua_setfield(L, -2, module_name);
 }
 
+MTwist mtwist;
+
 void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luayaml_module, "yaml");
 	lua_extend(L, luaopen_lpeg, "lpeg");
@@ -28,4 +34,9 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luaopen_luv, "luv");
         lua_extend(L, luaopen_enet, "enet");
 	lua_extend(L, luaopen_b2_vendor, "box2d");
+
+	LuaValue module = LuaValue::newtable(L);
+	luawrap::globals(L)["package"]["loaded"]["lanarts.MapGen"] = module;
+
+	ldungeon_gen::lua_register_ldungeon(module, &mtwist, /*Register lcommon: */ true);
 }

@@ -5,7 +5,7 @@ add_subdirectory(libs/)
 
 add_definitions( -std=c++98)
 
-set( HANDROLLED .)
+set( HANDROLLED ./libs)
 set( BUNDLED ../dependencies/bundled)
 
 include_directories(
