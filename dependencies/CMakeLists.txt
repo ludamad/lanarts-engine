@@ -14,4 +14,5 @@ add_subdirectory( bundled/rvo2 )
 add_subdirectory( bundled/lua-yaml ) 
 add_subdirectory( bundled/lua-luv ) 
 add_subdirectory( bundled/lua-box2d ) 
+add_subdirectory( bundled/UnitTest++ ) 
 

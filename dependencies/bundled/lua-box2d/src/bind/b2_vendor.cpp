@@ -935,7 +935,7 @@ extern "C" int luaopen_b2_vendor(lua_State *L) {
 
   // Create the table which will contain all the constants
   // AD: **Hack to return new table, instead of global table
-  lua_newtable(L);
+  lua_getglobal(L, "b2");
   // <lib>
   lua_pushvalue(L, -1);
   // <lib> <lib>

@@ -143,7 +143,7 @@ if(BOX2D_BUILD_SHARED)
 		${BOX2D_Rope_SRCS}
 		${BOX2D_Rope_HDRS}
 	)
-	set_target_properties(Box2D_shared PROPERTIES
+	set_target_properties(lBox2D_shared PROPERTIES
 		OUTPUT_NAME "Box2D"
 		CLEAN_DIRECT_OUTPUT 1
 		VERSION ${BOX2D_VERSION}
@@ -197,10 +197,10 @@ if(BOX2D_INSTALL)
 
 	# install libraries
 	if(BOX2D_BUILD_SHARED)
-		install(TARGETS Box2D_shared EXPORT Box2D-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR})
+		install(TARGETS lBox2D_shared EXPORT Box2D-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR})
 	endif()
 	if(BOX2D_BUILD_STATIC)
-		install(TARGETS Box2D EXPORT Box2D-targets ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+		install(TARGETS lBox2D EXPORT Box2D-targets ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 	endif()
 
 	# install build system hooks for third-party apps

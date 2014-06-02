@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT(project_lanarts)
 
+add_subdirectory(libs/)
+
 add_definitions( -std=c++98)
 
 set( HANDROLLED .)
@@ -17,14 +19,19 @@ include_directories(
     "${BUNDLED}" # for rvo2 
 )
 
+aux_source_directory("." lanarts-src) #Find source files
+
 add_library( lanarts-libs
              STATIC
-             extension-main.cpp
+             "${lanarts-src}"
 )
 
 target_link_libraries(lanarts-libs
     lua_enet
     lua_box2d
+    lanarts_dungeon_gen
+    lcommon
+    luawrap
     libxmi
     luayaml
     RVO
