@@ -39,7 +39,7 @@ include_directories(${LUA_INCLUDE_DIR})
 
 # setup linker flags
 find_package(Threads REQUIRED)
-list(APPEND LIBS ${CMAKE_THREAD_LIBS_INIT})
+#list(APPEND LIBS ${CMAKE_THREAD_LIBS_INIT})
 
 # build libuv
 #execute_process(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"

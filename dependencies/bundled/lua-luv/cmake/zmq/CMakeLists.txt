@@ -45,23 +45,23 @@ set(LIBRARY_OUTPUT_PATH  ${PROJECT_BINARY_DIR})
 # platform specifics
 
 if (WIN32)
-	add_definitions(
-          -DWIN32
-		-DDLL_EXPORT
+    	add_definitions(
+         -DWIN32
+         #    		-DDLL_EXPORT
 # NB: May require tweaking for highly connected applications.
 		-DFD_SETSIZE=1024
 		-D_CRT_SECURE_NO_WARNINGS
 	)
 
 # Parallel make.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
 # Optimization flags.
 # http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
-set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG")
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
+#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
+#set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
+#set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG")
 
 endif (WIN32)
 
@@ -131,9 +131,9 @@ set(cxx-sources
 	zmq_utils.cpp
 )
 
-set(rc-sources
-	version.rc
-)
+#set(rc-sources
+#	version.rc
+#)
 
 include_directories(include ${PROJECT_BINARY_DIR})
 
@@ -215,9 +215,9 @@ add_custom_command(
 
 
 if (WIN32)
-    add_library(libzmq STATIC ${sources} ${PROJECT_BINARY_DIR}/NSIS.template.in)
-    target_link_libraries(libzmq ws2_32.lib rpcrt4.lib)
-    set_target_properties(libzmq PROPERTIES RELEASE_POSTFIX "${_zmq_COMPILER}-mt" DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd")
+    add_library(zmq STATIC ${sources} ${PROJECT_BINARY_DIR}/NSIS.template.in)
+    target_link_libraries(zmq ws2_32.lib rpcrt4.lib)
+    set_target_properties(zmq PROPERTIES RELEASE_POSTFIX "${_zmq_COMPILER}-mt" DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd")
 else ()
     add_library(zmq STATIC ${sources} ${PROJECT_BINARY_DIR}/NSIS.template.in)
     find_package(Threads REQUIRED)

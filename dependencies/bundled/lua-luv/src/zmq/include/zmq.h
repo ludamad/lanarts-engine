@@ -37,21 +37,8 @@ extern "C" {
 #endif
 
 /*  Handle DSO symbol visibility                                             */
-#if defined _WIN32
-#   if defined DLL_EXPORT
-#       define ZMQ_EXPORT __declspec(dllexport)
-#   else
-#       define ZMQ_EXPORT __declspec(dllimport)
-#   endif
-#else
-#   if defined __SUNPRO_C  || defined __SUNPRO_CC
-#       define ZMQ_EXPORT __global
-#   elif (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
-#       define ZMQ_EXPORT __attribute__ ((visibility("default")))
-#   else
-#       define ZMQ_EXPORT
-#   endif
-#endif
+/* AD: Hack for Lanarts: */
+# define ZMQ_EXPORT
 
 /******************************************************************************/
 /*  0MQ versioning support.                                                   */
