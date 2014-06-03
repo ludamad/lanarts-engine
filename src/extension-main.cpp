@@ -14,7 +14,9 @@ int luaopen_lpeg(lua_State* L);
 int luaopen_linenoise(lua_State* L);
 // From dependency luv:
 int luaopen_luv(lua_State* L);
+// For ENet bindings:
 int luaopen_enet(lua_State* L);
+// For Box2D bindings:
 int luaopen_b2_vendor(lua_State* L);
 }
 
@@ -39,4 +41,5 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 	luawrap::globals(L)["package"]["loaded"]["lanarts.MapGen"] = module;
 
 	ldungeon_gen::lua_register_ldungeon(module, &mtwist, /*Register lcommon: */ true);
+
 }

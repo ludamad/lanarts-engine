@@ -54,4 +54,3 @@ void lua_register_timer(lua_State *L, const LuaValue& module) {
 	perf_timer["get_timing"].bind_function(perf_timer_average_time);
 	perf_timer["timing_print"].bind_function(perf_print_results);
 }
-
