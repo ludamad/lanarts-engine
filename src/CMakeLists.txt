@@ -7,6 +7,7 @@ add_definitions( -std=c++98)
 
 set( HANDROLLED ./libs)
 set( BUNDLED ../dependencies/bundled)
+set( EXTERNAL ../dependencies/external)
 
 include_directories(
     "."
@@ -17,6 +18,7 @@ include_directories(
     "${HANDROLLED}/luawrap-lib/include"
     "${HANDROLLED}/sound-lib/include"
     "${BUNDLED}" # for rvo2 
+    "${EXTERNAL}/luajit-2.0/src"
 )
 
 aux_source_directory("." lanarts-src) #Find source files

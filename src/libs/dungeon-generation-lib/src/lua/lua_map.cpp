@@ -331,7 +331,7 @@ namespace ldungeon_gen {
 		MapPtr map = args["map"].as<MapPtr>();
 		BBox area = luawrap::defaulted(args["area"], BBox(Pos(0,0), map->size()));
 		Pos xy;
-		bool found = find_random_square(ldungeon_get_rng(L), map,
+		bool found = find_random_square(*args["rng"].as<MTwist*>(), map,
 				area, lua_selector_get(args["selector"]), xy,
 				luawrap::defaulted(args["max_attempts"],
 						RANDOM_MATCH_MAX_ATTEMPTS));
@@ -453,8 +453,7 @@ namespace ldungeon_gen {
 		lua_State* L = args.luastate();
 
 		//Get RNG setup for map generation
-		luawrap::registry(L)["MapGenRNG"].push();
-		MTwist* mtwist = (MTwist*) lua_touserdata(L, -1);
+		MTwist* mtwist = args["rng"].as<MTwist*>();
 
 		LuaValue vs = args["validity_selector"];
 		Selector vfill_selector =
@@ -514,8 +513,7 @@ namespace ldungeon_gen {
 		lua_State* L = args.luastate();
 
 		//Get RNG setup for map generation
-		luawrap::registry(L)["MapGenRNG"].push();
-		MTwist* mtwist = (MTwist*) lua_touserdata(L, -1);
+        MTwist* mtwist = args["rng"].as<MTwist*>();
 		bool create_subgroup = defaulted(args["create_subgroup"], true);
 
 		Range size_range = args["size_range"].as<Range>();
@@ -569,19 +567,15 @@ namespace ldungeon_gen {
 
 		LUAWRAP_SET_TYPE(LuaStackValue);
 		LUAWRAP_GETTER(submodule, random_place,
-				random_place(OBJ["area"].as<BBox>(), ldungeon_get_rng(L), luawrap::defaulted(OBJ["size"], Size())));
+				random_place(OBJ["area"].as<BBox>(), *OBJ["rng"].as<MTwist*>(), luawrap::defaulted(OBJ["size"], Size())));
 	}
 
-	void lua_register_map(const LuaValue& submodule, MTwist* mtwist) {
+	void lua_register_map(const LuaValue& submodule) {
 		lua_State* L = submodule.luastate();
 
 		luawrap::install_userdata_type<MapPtr, lua_mapmetatable>();
 		luawrap::install_userdata_type<AreaOperatorPtr, lua_opermetatable>();
 		luawrap::install_userdata_type<AreaQueryPtr, lua_querymetatable>();
-
-		/* TODO: Find a better way to deal with this static variable hack. */
-		lua_pushlightuserdata(L, (void*) mtwist);
-		luawrap::registry(L)["MapGenRNG"].pop();
 
 		lua_register_bsp(submodule);
 		lua_register_placement_functions(submodule);

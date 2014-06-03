@@ -1,11 +1,12 @@
 tests = {}
 
-local MapGen = require "lanarts.MapGen"
+local mapgen = require "lanarts.mapgen"
+local mtwist = require "mtwist"
+local rng = mtwist.create(1)
 
 local function assert_exists(str)
-    assert(MapGen[str], str)
+    assert(mapgen[str], str)
 end
-
 function tests.test1_api_check()
     assert_exists("ROOT_GROUP")
 
@@ -24,37 +25,38 @@ function tests.test1_api_check()
 end
 
 local function make_rectangle_criteria()
-        return MapGen.rectangle_criteria { 
-                fill_selector = { matches_all = MapGen.FLAG_SOLID, matches_none = MapGen.FLAG_PERIMETER }, 
+        return mapgen.rectangle_criteria { 
+                fill_selector = { matches_all = mapgen.FLAG_SOLID, matches_none = mapgen.FLAG_PERIMETER }, 
                 perimeter_width = 1, 
-                perimeter_selector = { matches_all = MapGen.FLAG_SOLID }
+                perimeter_selector = { matches_all = mapgen.FLAG_SOLID }
         }
 end
 
 local function make_rectangle_oper(--[[Optional]] area_query)
-    return MapGen.rectangle_operator { 
+    return mapgen.rectangle_operator { 
         area_query = area_query,
         perimeter_width = 1,
-       fill_operator = { remove = {MapGen.FLAG_SOLID}, content = 1 },
-        perimeter_operator = { add = {MapGen.FLAG_PERIMETER}, content = 2 },
+       fill_operator = { remove = {mapgen.FLAG_SOLID}, content = 1 },
+        perimeter_operator = { add = {mapgen.FLAG_PERIMETER}, content = 2 },
     }
 end
 
 local function make_tunnel_oper() 
-        return MapGen.tunnel_operator {
+        return mapgen.tunnel_operator {
         validity_selector = { 
-            fill_selector = { matches_all = MapGen.FLAG_SOLID, matches_none = MapGen.FLAG_TUNNEL },
-            perimeter_selector = { matches_all = MapGen.FLAG_SOLID, matches_none = MapGen.FLAG_TUNNEL }
+            fill_selector = { matches_all = mapgen.FLAG_SOLID, matches_none = mapgen.FLAG_TUNNEL },
+            perimeter_selector = { matches_all = mapgen.FLAG_SOLID, matches_none = mapgen.FLAG_TUNNEL }
         },
 
         completion_selector = {
-            fill_selector = { matches_none = {MapGen.FLAG_SOLID, MapGen.FLAG_PERIMETER, MapGen.FLAG_TUNNEL} },
-            perimeter_selector = { matches_none = MapGen.FLAG_SOLID } 
+            fill_selector = { matches_none = {mapgen.FLAG_SOLID, mapgen.FLAG_PERIMETER, mapgen.FLAG_TUNNEL} },
+            perimeter_selector = { matches_none = mapgen.FLAG_SOLID } 
         },
 
-        fill_operator = { add = MapGen.FLAG_TUNNEL, remove = MapGen.FLAG_SOLID, content = 3},
-        perimeter_operator = { matches_all = MapGen.FLAG_SOLID, add = {MapGen.FLAG_SOLID, MapGen.FLAG_TUNNEL, MapGen.FLAG_PERIMETER}, content = 4 },
+        fill_operator = { add = mapgen.FLAG_TUNNEL, remove = mapgen.FLAG_SOLID, content = 3},
+        perimeter_operator = { matches_all = mapgen.FLAG_SOLID, add = {mapgen.FLAG_SOLID, mapgen.FLAG_TUNNEL, mapgen.FLAG_PERIMETER}, content = 4 },
 
+            rng = rng,
                 perimeter_width = 1,
         size_range = {1,2},
         tunnels_per_room_range = {1,2}
@@ -98,9 +100,9 @@ local function print_map(map, --[[Optional]] instances)
             local sqr = map:get({x, y})
 
             local n, g = sqr.content, sqr.group
-            local solid = MapGen.flags_match(sqr.flags, MapGen.FLAG_SOLID)
-            local perimeter = MapGen.flags_match(sqr.flags, MapGen.FLAG_PERIMETER)
-            local tunnel = MapGen.flags_match(sqr.flags, MapGen.FLAG_TUNNEL)
+            local solid = mapgen.flags_match(sqr.flags, mapgen.FLAG_SOLID)
+            local perimeter = mapgen.flags_match(sqr.flags, mapgen.FLAG_PERIMETER)
+            local tunnel = mapgen.flags_match(sqr.flags, mapgen.FLAG_TUNNEL)
 
                 if inst then 
                         add_part(inst .. " ") 
@@ -129,31 +131,33 @@ local function print_map(map, --[[Optional]] instances)
 end
 
 function tests.test2_bsp()
-    local map = MapGen.map_create { size = {80,40}, flags = MapGen.FLAG_SOLID }
+    local map = mapgen.map_create { size = {80,40}, flags = mapgen.FLAG_SOLID }
 
     print "bsp oper create"
-    local bsp_oper = MapGen.bsp_operator {
+    local bsp_oper = mapgen.bsp_operator {
         child_operator = make_rectangle_oper(),
         split_depth = 7,
-        minimum_node_size = {8,8}
+        minimum_node_size = {8,8},
+        rng = rng
     }
 
     print "bsp oper apply"
     -- Apply the binary space partitioning (bsp)
-    bsp_oper(map, MapGen.ROOT_GROUP, bbox_create({0,0}, map.size))
+    bsp_oper(map, mapgen.ROOT_GROUP, bbox_create({0,0}, map.size))
 
     local tunnel_oper = make_tunnel_oper()
 
-    tunnel_oper(map, MapGen.ROOT_GROUP, bbox_create( {0,0}, map.size) )
+    tunnel_oper(map, mapgen.ROOT_GROUP, bbox_create( {0,0}, map.size) )
 
         print_map(map)
 end
 
 function tests.test3_random_placement()
-    local map = MapGen.map_create { size = {80,40}, flags = MapGen.FLAG_SOLID }
+    local map = mapgen.map_create { size = {80,40}, flags = mapgen.FLAG_SOLID }
 
     print "random placement oper create"
-    local random_placement_oper = MapGen.random_placement_operator {
+    local random_placement_oper = mapgen.random_placement_operator {
+        rng = rng,
         child_operator = make_rectangle_oper(make_rectangle_criteria()),
         size_range = {6,9},
         amount_of_placements_range = {20, 20},
@@ -162,21 +166,21 @@ function tests.test3_random_placement()
 
     print "random placement oper apply"
     -- Apply the binary space partitioning (bsp)
-    random_placement_oper(map, MapGen.ROOT_GROUP, bbox_create({0,0}, map.size))
+    random_placement_oper(map, mapgen.ROOT_GROUP, bbox_create({0,0}, map.size))
 
     local tunnel_oper = make_tunnel_oper()
 
-    tunnel_oper(map, MapGen.ROOT_GROUP, bbox_create( {0,0}, map.size) )
+    tunnel_oper(map, mapgen.ROOT_GROUP, bbox_create( {0,0}, map.size) )
 
     print_map(map)
 end
 
 
 local function place_instance(map, area, type)          
-        local xy = MapGen.find_random_square { map = map, area = area, selector = {matches_none = {MapGen.FLAG_HAS_OBJECT, MapGen.FLAG_SOLID} } }
+        local xy = mapgen.find_random_square { map = map, area = area, selector = {matches_none = {mapgen.FLAG_HAS_OBJECT, mapgen.FLAG_SOLID} }, rng = rng }
         if xy ~= nil then
                 map.instances:add(type, xy)
-                map:square_apply(xy, {add = MapGen.FLAG_HAS_OBJECT})
+                map:square_apply(xy, {add = mapgen.FLAG_HAS_OBJECT})
         end
 end
 
@@ -191,10 +195,10 @@ end
 -- Test with lua functions, just recreating map_random_placement_test
 function tests.test4_custom_operator()
     -- Uses 'InstanceList' class defined above
-    local map = MapGen.map_create { size = {80,40}, flags = MapGen.FLAG_SOLID, instances = InstanceList.create() }
+    local map = mapgen.map_create { size = {80,40}, flags = mapgen.FLAG_SOLID, instances = InstanceList.create() }
 
     print "custom create"
-    local random_placement_oper = MapGen.random_placement_operator {
+    local random_placement_oper = mapgen.random_placement_operator {
         child_operator = function(map, subgroup, bounds)
                 --Purposefully convoluted for test purposes
                 local queryfn = function(...)
@@ -209,48 +213,49 @@ function tests.test4_custom_operator()
                         return false
                 end,
         size_range = {6,9},
+        rng = rng,
         amount_of_placements_range = {20, 20},
         create_subgroup = true
     }
 
     print "custom apply"
     -- Apply the binary space partitioning (bsp)
-    random_placement_oper(map, MapGen.ROOT_GROUP, bbox_create({0,0}, map.size))
+    random_placement_oper(map, mapgen.ROOT_GROUP, bbox_create({0,0}, map.size))
 
     local tunnel_oper = make_tunnel_oper()
 
-    tunnel_oper(map, MapGen.ROOT_GROUP, bbox_create( {0,0}, map.size) )
+    tunnel_oper(map, mapgen.ROOT_GROUP, bbox_create( {0,0}, map.size) )
 
     print_map(map, map.instances)
 end
 
 function tests.test5_areatemplate()
-    local map = MapGen.map_create { size = {4,4}, instances = InstanceList.create() }
-        local area_template = MapGen.area_template_create {
+    local map = mapgen.map_create { size = {4,4}, instances = InstanceList.create() }
+        local area_template = mapgen.area_template_create {
                 data =
 [[++++
 +--+
 +--+
 ++++]],
                 legend = {
-                        ["+"] = { add = MapGen.FLAG_SOLID },
+                        ["+"] = { add = mapgen.FLAG_SOLID },
                         ["-"] = { }
                 }
         }
         area_template:apply { 
                 map = map,
-                group = MapGen.ROOT_GROUP, 
+                group = mapgen.ROOT_GROUP, 
                 top_left_xy = {0,0} 
         }
         print_map(map)
 end
 
-local FLAG_APPLIED = MapGen.FLAG_CUSTOM1
+local FLAG_APPLIED = mapgen.FLAG_CUSTOM1
 
 function tests.test6_areatemplate_complex()
-    local map = MapGen.map_create { size = {40,40}, flags = 0, instances = InstanceList.create() }
+    local map = mapgen.map_create { size = {40,40}, flags = 0, instances = InstanceList.create() }
 
-        local area_template = MapGen.area_template_create {
+        local area_template = mapgen.area_template_create {
                 data =
 [[------------
 --+++++++---
@@ -265,14 +270,14 @@ function tests.test6_areatemplate_complex()
 --++---+++--
 ------------]],
                 legend = {
-                        ["+"] = { add = {MapGen.FLAG_SOLID, FLAG_APPLIED} },
+                        ["+"] = { add = {mapgen.FLAG_SOLID, FLAG_APPLIED} },
                         ["-"] = { add = FLAG_APPLIED }
                 }
         }
 
-    MapGen.random_placement_operator {
+    mapgen.random_placement_operator {
         child_operator = function(map, group, rect)
-                if not MapGen.rectangle_criteria {fill_selector = {matches_none = FLAG_APPLIED} } (map, group, rect) then
+                if not mapgen.rectangle_criteria {fill_selector = {matches_none = FLAG_APPLIED} } (map, group, rect) then
                         return false
                 end
                 area_template:apply { 
@@ -283,52 +288,53 @@ function tests.test6_areatemplate_complex()
                     flip_y = math.random() > 0.5
                 }
         end,
+        rng = rng,
         size_range = {12,12},
         amount_of_placements_range = {5, 5},
-    }(map, MapGen.ROOT_GROUP, bbox_create({0,0}, map.size))
+    }(map, mapgen.ROOT_GROUP, bbox_create({0,0}, map.size))
     print_map(map)
 end
 
 
 function tests.test7_areatemplate_from_file()
-        local area_template = MapGen.area_template_create {
+        local area_template = mapgen.area_template_create {
                 data_file = "test-template.txt", 
                 legend = {
-                        ["x"] = { add = {MapGen.FLAG_SOLID, FLAG_APPLIED} },
+                        ["x"] = { add = {mapgen.FLAG_SOLID, FLAG_APPLIED} },
                         ["."] = { add = 0 }
                 }
         }
 
-    local map = MapGen.map_create { size = {100,100}, instances = InstanceList.create() }
+    local map = mapgen.map_create { size = {100,100}, instances = InstanceList.create() }
     area_template:apply { 
             map = map,
-            group = MapGen.ROOT_GROUP, 
+            group = mapgen.ROOT_GROUP, 
             top_left_xy = {0,0} 
     }
     print_map(map)
 end
 
 function tests.tests8_polygon_apply()
-    local map = MapGen.map_create { size = {50,50} }
-    MapGen.polygon_apply {
+    local map = mapgen.map_create { size = {50,50} }
+    mapgen.polygon_apply {
         map = map, 
-        operator = { add = {MapGen.FLAG_SOLID, FLAG_APPLIED} }, 
+        operator = { add = {mapgen.FLAG_SOLID, FLAG_APPLIED} }, 
         points = { {0,25}, {15,0}, {35,0}, {50, 25}, {35, 50}, {15, 50} }
         }
     print_map(map)
 end
 
 function tests.tests9_line_apply()
-    local map = MapGen.map_create { size = {50,50} }
-    MapGen.line_apply {
+    local map = mapgen.map_create { size = {50,50} }
+    mapgen.line_apply {
         map = map, 
-        operator = { add = {MapGen.FLAG_SOLID, FLAG_APPLIED} }, 
+        operator = { add = {mapgen.FLAG_SOLID, FLAG_APPLIED} }, 
         from_xy = {10,10}, to_xy = {40,40}
         }
-    MapGen.line_apply {
+    mapgen.line_apply {
         map = map, 
         line_width = 4,
-        operator = { add = {MapGen.FLAG_SOLID, FLAG_APPLIED} }, 
+        operator = { add = {mapgen.FLAG_SOLID, FLAG_APPLIED} }, 
         from_xy = {5,5}, to_xy = {40,5}
         }
     print_map(map)
