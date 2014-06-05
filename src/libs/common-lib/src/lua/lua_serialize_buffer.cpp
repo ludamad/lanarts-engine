@@ -9,6 +9,24 @@
 #include "luaserialize.h"
 #include "SerializeBuffer.h"
 
+static int sb_write_object(lua_State* L) {
+    int n_args = lua_gettop(L);
+    if (n_args != 2) {
+        return luaL_error(L, "Two arguments expected, got %d!", n_args);
+    }
+    luaserialize_encode(L, luawrap::get<SerializeBuffer&>(L, 1), 2);
+    return 0;
+}
+
+static int sb_read_object(lua_State* L) {
+    int n_args = lua_gettop(L);
+    if (n_args != 1) {
+        return luaL_error(L, "One argument expected, got %d!", n_args);
+    }
+    luaserialize_decode(L, luawrap::get<SerializeBuffer&>(L, 1));
+    return 1;
+}
+
 LuaValue lua_serializebuffermetatable(lua_State* L) {
 	LUAWRAP_SET_TYPE(SerializeBuffer&);
 
@@ -16,8 +34,9 @@ LuaValue lua_serializebuffermetatable(lua_State* L) {
 	LuaValue methods = luameta_constants(meta);
 	LuaValue getters = luameta_getters(meta);
 
-//	LUAWRAP_METHOD(methods, write, lua_serialize(OBJ, L, lua_gettop(L) - 1));
-//	LUAWRAP_METHOD(methods, read, lua_deserialize(OBJ, L, lua_gettop(L) - 1));
+	methods["write"].bind_function(sb_write_object);
+    methods["read"].bind_function(sb_read_object);
+
 	LUAWRAP_METHOD(methods, write_int, OBJ.write_int(lua_tointeger(L, 2)));
 	LUAWRAP_METHOD(methods, write_double, OBJ.write(lua_tonumber(L, 2)));
 	LUAWRAP_METHOD(methods, write_raw,

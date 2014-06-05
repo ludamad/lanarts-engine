@@ -19,6 +19,8 @@ int luaopen_enet(lua_State* L);
 int luaopen_b2_vendor(lua_State* L);
 }
 
+int luaopen_GameInstSet(lua_State* L);
+
 extern "C" {
 #include <luajit.h>
 }
@@ -56,12 +58,12 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luaopen_lpeg, "lpeg");
 	lua_extend(L, luaopen_linenoise, "linenoise");
 	lua_extend(L, luaopen_luv, "luv");
-        lua_extend(L, luaopen_enet, "enet");
+    lua_extend(L, luaopen_enet, "enet");
 	lua_extend(L, luaopen_b2_vendor, "box2d");
+	lua_extend(L, luaopen_GameInstSet, "lanarts.GameInstSet");
 
 	LuaValue module = LuaValue::newtable(L);
 	luawrap::globals(L)["package"]["loaded"]["lanarts.mapgen"] = module;
 
 	ldungeon_gen::lua_register_ldungeon(module, /*Register lcommon: */ true);
-
 }

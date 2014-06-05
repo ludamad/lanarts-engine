@@ -74,14 +74,14 @@ LuaValue lua_mtwistmetatable(lua_State* L) {
 	return meta;
 }
 
-static MTwist newtimer(unsigned int seed) {
+static MTwist newmtwist(unsigned int seed) {
 	return MTwist(seed);
 }
 
 int luaopen_mtwist(lua_State *L) {
 	luawrap::install_userdata_type<MTwist, &lua_mtwistmetatable>();
 	LuaValue module = LuaValue::newtable(L);
-	module["create"].bind_function(newtimer);
+	module["create"].bind_function(newmtwist);
 	module.push();
 	return 1;
 }
