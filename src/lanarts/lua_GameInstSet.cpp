@@ -55,10 +55,17 @@ static void update(GameInstSet& set) {
 }
 
 static int object_radius_test(lua_State* L) {
+    int n_args = lua_gettop(L);
+
     GameInstSet* set = luawrap::get<GameInstSet*>(L, 1);
     obj_id id = lua_tointeger(L, 2);
 
-    obj_id collided_id = set->object_radius_test(id);
+    // Optional arguments, override object properties:
+    double x = n_args >= 3 ? lua_tonumber(L, 3) : -1;
+    double y = n_args >= 4 ? lua_tonumber(L, 4) : -1;
+    double rad = n_args >= 5 ? lua_tonumber(L, 5) : -1;
+
+    obj_id collided_id = set->object_radius_test(id, x, y, rad);
     if (collided_id == 0) {
         lua_pushnil(L);
     } else {

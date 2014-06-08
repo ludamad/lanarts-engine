@@ -68,12 +68,12 @@ public:
 	//Returns NULL if no unit found
 	GameInst* get_instance(obj_id id) const;
 
-	int object_radius_test(GameInst& obj, GameInst* objs = NULL,
+	int object_radius_test(GameInst* obj, GameInst* objs = NULL,
 	        int obj_cap = 0, int x = -1, int y = -1, int radius = -1);
 
 	obj_id object_radius_test(obj_id id, int x = -1, int y = -1, int radius = -1) {
 	    GameInst result[1];
-	    int amount = object_radius_test(*get_instance(id), result, 1, x, y, radius);
+	    int amount = object_radius_test(get_instance(id), result, 1, x, y, radius);
 	    if (amount == 0) {
 	        return 0;
 	    }

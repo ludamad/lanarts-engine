@@ -341,5 +341,6 @@ function tests.tests9_line_apply()
 end
 
 for k,v in pairs(tests) do
+    print("running ", k)
     v()
 end

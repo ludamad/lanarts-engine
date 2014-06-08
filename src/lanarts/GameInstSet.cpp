@@ -198,6 +198,7 @@ obj_id GameInstSet::add_instance(double x, double y,  double radius, double targ
 	InstanceState* state = &unit_set[0];
 
 	GameInst inst;
+	inst.fill_state = GameInst::FILLED;
 	inst.x = x, inst.y = y;
 	inst.radius = radius, inst.target_radius = target_radius;
 	inst.solid = solid;
@@ -315,10 +316,10 @@ void GameInstSet::copy_to(GameInstSet& inst_set) const {
 //	LANARTS_ASSERT(check_copy_integrity(inst_set));
 }
 
-int GameInstSet::object_radius_test(GameInst& obj, GameInst* objs, int obj_cap, int x, int y, int radius) {
-	int rad = radius == -1 ? obj.target_radius : radius;
-	x = x == -1 ? obj.x : x;
-	y = y == -1 ? obj.y : y;
+int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap, int x, int y, int radius) {
+	int rad = radius == -1 ? obj->target_radius : radius;
+	x = x == -1 ? obj->x : x;
+	y = y == -1 ? obj->y : y;
 
 	int mingrid_x = (x - rad) / REGION_SIZE, mingrid_y = (y - rad)
 			/ REGION_SIZE;
@@ -341,7 +342,7 @@ int GameInstSet::object_radius_test(GameInst& obj, GameInst* objs, int obj_cap, 
 
 			while (ptr) {
 				GameInst& inst = ptr->inst;
-				if (obj.id != inst.id) {
+				if (obj == NULL || obj->id != inst.id) {
 					int radsqr = (inst.target_radius + rad)
 							* (inst.target_radius + rad);
 					int dx = inst.x - x, dy = inst.y - y;
