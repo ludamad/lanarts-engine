@@ -1,8 +1,3 @@
-/*
- * lua_gameinstset.cpp:
- *  Registers the MTwist class for lua.
- */
-
 #include <cassert>
 
 #define LUAWRAP_LONG_FUNCTIONS
@@ -53,7 +48,7 @@ static void remove_instance(GameInstSet& set, obj_id id) {
 static void update(GameInstSet& set) {
     set.update();
 }
-
+// object_radius_test(inst_set, obj_id, x?, y?, radius?)
 static int object_radius_test(lua_State* L) {
     int n_args = lua_gettop(L);
 
