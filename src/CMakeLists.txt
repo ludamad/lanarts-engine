@@ -23,12 +23,16 @@ include_directories(
 
 aux_source_directory("." lanarts-src1) #Find source files
 aux_source_directory("lanarts" lanarts-src2) #Find source files
+aux_source_directory("lanarts/fov" lanarts-src3) #Find source files
+aux_source_directory("lanarts/fov/impl" lanarts-src4) #Find source files
 
 add_library( lanarts-libs
              STATIC
              
              ${lanarts-src1}
              ${lanarts-src2}
+             ${lanarts-src3}
+             ${lanarts-src4}
 )
 
 target_link_libraries(lanarts-libs

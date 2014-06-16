@@ -5,12 +5,12 @@
 
 #include "GameTiles.h"
 
-static bool radius_test(GameTiles& tiles, const Pos& xy, int rad) {
-    return tiles.radius_test(xy, rad);
+static bool radius_test(const ldungeon_gen::MapPtr& map, double x, double y, int rad) {
+    return GameTiles(map).radius_test(Pos(x, y), rad);
 }
 
-static bool line_test(GameTiles& tiles, const Pos& from_xy, const Pos& to_xy) {
-    return tiles.line_test(from_xy, to_xy);
+static bool line_test(const ldungeon_gen::MapPtr& map, double x1, double y1, double x2, double y2) {
+    return GameTiles(map).line_test(Pos(x1, y1), Pos(x2, y2));
 }
 
 LuaValue lua_gametilesmetatable(lua_State* L) {
@@ -25,14 +25,12 @@ LuaValue lua_gametilesmetatable(lua_State* L) {
 	return meta;
 }
 
-static GameTiles new_game_tiles(BoolGridRef& solidity, BoolGridRef& seen, BoolGridRef& seethrough) {
-	return GameTiles(solidity, seen, seethrough);
-}
-
 int luaopen_GameTiles(lua_State *L) {
 	luawrap::install_userdata_type<GameTiles, &lua_gametilesmetatable>();
 	LuaValue module = LuaValue::newtable(L);
-	module["create"].bind_function(new_game_tiles);
+	module["radius_test"].bind_function(radius_test);
+	module["line_test"].bind_function(line_test);
+//	module["create"].bind_function(new_game_tiles);
 	module.push();
 	return 1;
 }

@@ -45,7 +45,7 @@ static void remove_instance(GameInstSet& set, obj_id id) {
     set.remove_instance(id);
 }
 
-static void update(GameInstSet& set) {
+static void step(GameInstSet& set) {
     set.update();
 }
 // object_radius_test(inst_set, obj_id, x?, y?, radius?)
@@ -78,7 +78,7 @@ LuaValue lua_gameinstsetmetatable(lua_State* L) {
 	methods["get_instance"].bind_function(get_instance);
 	methods["update_instance"].bind_function(update_instance);
 	methods["remove_instance"].bind_function(remove_instance);
-	methods["update"].bind_function(update);
+	methods["step"].bind_function(step);
 	methods["object_radius_test"].bind_function(object_radius_test);
 
 	luameta_gc<GameInstSet>(meta);
