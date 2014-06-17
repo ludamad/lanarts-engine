@@ -15,7 +15,7 @@
 using namespace std;
 
 fov::fov(const ldungeon_gen::MapPtr& map, int radius) :
-		radius(radius), m(radius, radius, radius, radius), ptx(0), pty(
+		map(map), radius(radius), m(radius, radius, radius, radius), ptx(0), pty(
 				0), sx(0), sy(0) {
 	diameter = radius * 2 + 1;
 	has_been_calculated = false;
@@ -94,12 +94,12 @@ void fov::visit(short destX, short destY) {
 
 void fov::update_seen_map(const BoolGridRef& seen) {
     // Iterate the area seen
-    BBox bounds(Pos(), seen->size());
-    BBox covered = tiles_covered().resized_within(bounds);
+    BBox covered = tiles_covered();
 
+    // Lua compatibility: Off by 1 subtraction
     FOR_EACH_BBOX(covered, x, y) {
-        if (raw_within_fov(x, y)) {
-            seen[Pos(x,y)] = true;
+        if (within_fov(x-1, y-1)) {
+            (*seen)[Pos(x-1,y-1)] = true;
         }
     }
 }

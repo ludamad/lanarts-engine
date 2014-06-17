@@ -202,7 +202,7 @@ obj_id GameInstSet::add_instance(double x, double y,  double radius, double targ
 	inst.x = x, inst.y = y;
 	inst.radius = radius, inst.target_radius = target_radius;
 	inst.solid = solid;
-	inst.id = id ? id : (next_id++);
+	inst.id = id != 0 ? id : (next_id++);
 
 	//Add an object with the assumption that this object does not currently exist (_noequal)
 	if (tset_add_noequal<GameInstSetFunctions>(inst, state, unit_capacity)) {
@@ -337,10 +337,11 @@ int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap, 
 		for (int xx = minx; xx <= maxx; xx++) {
 			InstanceLinkedList& unit_list = unit_grid[index++];
 			InstanceState* ptr = unit_list.start_of_list;
+			InstanceState* eptr = unit_list.end_of_list;
 			if (!ptr)
 				continue;
 
-			while (ptr) {
+			while (true) {
 				GameInst& inst = ptr->inst;
 				if (obj == NULL || obj->id != inst.id) {
 					int radsqr = (inst.target_radius + rad)
@@ -357,6 +358,9 @@ int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap, 
 						if (obj_n >= obj_cap)
 							return obj_n;
 					}
+				}
+				if (ptr == eptr) {
+				    break;
 				}
 				ptr = ptr->next_in_grid;
 			}
