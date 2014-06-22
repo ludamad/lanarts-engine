@@ -5,9 +5,13 @@
 
 #include "GameInstSet.h"
 
-static obj_id add_instance(GameInstSet& set, double x, double y, double radius,
+static void copy(GameInstSet* from, GameInstSet* to) {
+    from->copy_to(*to);
+}
+
+static obj_id add_instance(GameInstSet* set, double x, double y, double radius,
         double target_radius, bool solid) {
-    return set.add_instance(x, y, radius, target_radius, solid);
+    return set->add_instance(x, y, radius, target_radius, solid);
 }
 
 static void update_instance(LuaStackValue value, obj_id id, double x, double y, double radius,
@@ -41,12 +45,12 @@ static int get_instance(lua_State* L) {
     lua_pushboolean(L, inst->solid);
     return 5;
 }
-static void remove_instance(GameInstSet& set, obj_id id) {
-    set.remove_instance(id);
+static void remove_instance(GameInstSet* set, obj_id id) {
+    set->remove_instance(id);
 }
 
-static void step(GameInstSet& set) {
-    set.update();
+static void step(GameInstSet* set) {
+    set->update();
 }
 // object_radius_test(inst_set, obj_id, x?, y?, radius?)
 static int object_radius_test(lua_State* L) {
@@ -78,6 +82,7 @@ LuaValue lua_gameinstsetmetatable(lua_State* L) {
 	methods["get_instance"].bind_function(get_instance);
 	methods["update_instance"].bind_function(update_instance);
 	methods["remove_instance"].bind_function(remove_instance);
+	methods["copy"].bind_function(copy);
 	methods["step"].bind_function(step);
 	methods["object_radius_test"].bind_function(object_radius_test);
 
@@ -86,8 +91,10 @@ LuaValue lua_gameinstsetmetatable(lua_State* L) {
 	return meta;
 }
 
-static GameInstSet new_game_inst_set(int width, int height) {
-	return GameInstSet(width, height);
+static int new_game_inst_set(lua_State* L) {
+    void* valptr = luameta_newuserdata(L, lua_gameinstsetmetatable, sizeof(GameInstSet));
+    new (valptr) GameInstSet(luawrap::get<int>(L, 1), luawrap::get<int>(L, 2));
+    return 1;
 }
 
 int luaopen_GameInstSet(lua_State *L) {

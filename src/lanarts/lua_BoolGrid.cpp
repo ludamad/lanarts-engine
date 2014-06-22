@@ -15,11 +15,20 @@ static int get_size(lua_State* L) {
     return 2;
 }
 
+static BoolGridRef _clone(const BoolGridRef& ref) {
+    return BoolGridRef(new Grid<bool>(*ref));
+}
+static void copy(const BoolGridRef& ref1, BoolGridRef& ref2) {
+    *ref2 = *ref1;
+}
+
 LuaValue lua_boolgridmetatable(lua_State* L) {
 	LuaValue meta = luameta_new(L, "BoolGrid");
 	LuaValue methods = luameta_constants(meta);
 
 	methods["get_size"].bind_function(get_size);
+	methods["clone"].bind_function(_clone);
+	methods["copy"].bind_function(copy);
 
     LUAWRAP_SET_TYPE(BoolGridRef);
 
@@ -39,6 +48,8 @@ int luaopen_BoolGrid(lua_State *L) {
 	luawrap::install_userdata_type<BoolGridRef, &lua_boolgridmetatable>();
 	LuaValue module = LuaValue::newtable(L);
 	module["create"].bind_function(new_boolgrid);
+	luameta_push(L, &lua_boolgridmetatable);
+    module["metatable"].pop();
 	module.push();
 	return 1;
 }

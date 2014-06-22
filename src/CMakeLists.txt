@@ -25,6 +25,7 @@ aux_source_directory("." lanarts-src1) #Find source files
 aux_source_directory("lanarts" lanarts-src2) #Find source files
 aux_source_directory("lanarts/fov" lanarts-src3) #Find source files
 aux_source_directory("lanarts/fov/impl" lanarts-src4) #Find source files
+aux_source_directory("lanarts/opengl" lanarts-src5) #Find source files
 
 add_library( lanarts-libs
              STATIC
@@ -33,11 +34,12 @@ add_library( lanarts-libs
              ${lanarts-src2}
              ${lanarts-src3}
              ${lanarts-src4}
+			 ${lanarts-src5}
 )
 
 target_link_libraries(lanarts-libs
     lua_enet
-    lua_box2d
+#    lua_box2d
     lanarts_dungeon_gen
     lcommon
     luawrap

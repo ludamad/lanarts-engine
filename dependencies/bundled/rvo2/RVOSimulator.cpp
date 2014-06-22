@@ -408,4 +408,12 @@ namespace RVO
   {
     timeStep_ = timeStep;
   }
+  void RVOSimulator::changeAgentNo(size_t agentNo, size_t newAgentNo)
+  {
+    if (newAgentNo > agents_.size()) {
+       agents_.resize(newAgentNo+1, NULL);
+    }
+    std::swap(agents_[agentNo], agents_[newAgentNo]);
+  }
 }
+

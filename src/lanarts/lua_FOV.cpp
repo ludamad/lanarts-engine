@@ -12,18 +12,20 @@ using namespace luawrap;
 static void calculate(fov& fov, int ptx, int pty) {
     return fov.calculate(ptx, pty);
 }
-//static bool within_fov(fov& fov, int grid_x, int grid_y) {
-//    return fov.within_fov(grid_x, grid_y);
-//}
+static bool within_fov(fov& fov, int grid_x, int grid_y) {
+    return fov.within_fov(grid_x - 1, grid_y - 1);
+}
 
 static void update_seen_map(fov& fov, const BoolGridRef& seen) {
     fov.update_seen_map(seen);
 }
-static bool within_fov(fov& fov, const BBox& bbox) {
-    return fov.within_fov(bbox);
-}
+//static bool within_fov(fov& fov, const BBox& bbox) {
+//    return fov.within_fov(bbox);
+//}
 static BBox tiles_covered(fov& fov) {
-    return fov.tiles_covered();
+    BBox bbox = fov.tiles_covered();
+    // Lua correction
+    return BBox(bbox.x1 + 1, bbox.y1 + 1, bbox.x2 + 1, bbox.y2 + 1);
 }
 
 LuaValue lua_fov(lua_State* L) {
@@ -52,6 +54,8 @@ int luaopen_FieldOfView(lua_State *L) {
 	luawrap::install_userdata_type<fov, &lua_fov>();
 	LuaValue module = LuaValue::newtable(L);
 	module["create"].bind_function(new_fvo);
+    luameta_push(L, &lua_fov);
+    module["metatable"].pop();
 	module.push();
 	return 1;
 }

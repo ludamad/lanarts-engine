@@ -14,8 +14,6 @@
 #include <cstdlib>
 #include <vector>
 
-#include <map>
-
 #include <lcommon/geometry.h>
 
 class SerializeBuffer;
@@ -32,7 +30,6 @@ struct GameInst {
         TOMBSTONE
     };
     obj_id id;
-    int depth;
     double x, y;
     double last_x, last_y;
     double radius, target_radius;
@@ -42,7 +39,6 @@ struct GameInst {
     GameInst() {
         // TODO?: Technically redundant with memset below
         id = 0;
-        depth = 0;
         x = y = 0;
         last_x = last_y = 0;
         radius = target_radius = 0;
@@ -86,7 +82,6 @@ public:
 	void skip_next_id() {
 		next_id++;
 	}
-	//Allocate all instances to one vector, traversed according to depth order
 	std::vector<GameInst> to_vector() const;
 	size_t size() const {
 		return unit_amnt;
@@ -95,7 +90,7 @@ public:
 	unsigned int hash() const;
 	bool check_copy_integrity(const GameInstSet& inst_set) const;
 
-	void copy_to(GameInstSet& inst_set) const;
+	void copy_to(GameInstSet& inst_set);
 
 	std::vector<GameInst> object_rectangle_test(BBox rect, GameInst* tester = NULL);
 	void clear();
@@ -110,19 +105,19 @@ private:
 		GameInst inst;
 		//These pointers are invalidated upon hashmap reallocation
 		InstanceState* next_in_grid, *prev_in_grid;
-		InstanceState* next_same_depth, *prev_same_depth;
 		InstanceState() {
 			memset(this, 0, sizeof(InstanceState));
 		}
+
 		//Used in settools.h
 		void operator=(const GameInst& inst) {
 			this->inst = inst;
 			next_in_grid = NULL;
 			prev_in_grid = NULL;
-			next_same_depth = NULL;
-			prev_same_depth = NULL;
 		}
 	};
+
+	void adjust_instance_state_ptr(GameInstSet::InstanceState** ptr, GameInstSet& to);
 
 	//List of instances with the same rendering depth
 	struct InstanceLinkedList {
@@ -132,12 +127,7 @@ private:
 		}
 	};
 
-	typedef std::map<int, InstanceLinkedList> DepthMap;
-
 	/* Internal Data */
-
-	// Map to the first object of a certain depth
-	DepthMap depthlist_map;
 
 	// Hashset portion
 	int next_id, unit_amnt, unit_capacity;
@@ -153,12 +143,9 @@ private:
 	void __update_collision_position(InstanceState* state, const Pos& p1, const Pos& p2);
 	void reallocate_internal_data();
 	void update_statepointer_for_reallocate_(InstanceState** stateptr);
-	void update_depthlist_for_reallocate_(InstanceLinkedList& list);
 
+	void update_instancelist_for_reallocate_(InstanceLinkedList& list);
 	void update_instance_for_step(InstanceState* state, GameInst& inst);
-
-	void add_to_depthlist(InstanceState* state, InstanceLinkedList& list);
-	void remove_from_depthlist(InstanceState* inst, InstanceLinkedList& list);
 
 	void add_to_collisionlist(InstanceState* inst, InstanceLinkedList& list);
 	void remove_from_collisionlist(InstanceState* inst,

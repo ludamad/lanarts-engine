@@ -20,6 +20,18 @@ fov::fov(const ldungeon_gen::MapPtr& map, int radius) :
 	diameter = radius * 2 + 1;
 	has_been_calculated = false;
 	sight_mask = new char[diameter * diameter];
+    float radius_squared = (radius-.5) * (radius-.5);
+
+    for (int y = -radius; y <= radius; y++) {
+        for (int x = -radius; x <= radius; x++) {
+
+            if (x * x + y * y < radius_squared) {
+                m.set(x, y);
+            } else {
+                m.clear(x, y);
+            }
+        }
+    }
 }
 
 void fov::calculate(int ptx, int pty) {
@@ -28,19 +40,6 @@ void fov::calculate(int ptx, int pty) {
 	this->has_been_calculated = true;
 	this->ptx = ptx, this->pty = pty;
 	this->sx = ptx - radius, this->sy = pty - radius;
-
-	float radius_squared = (radius-.5) * (radius-.5);
-
-	for (int y = -radius; y <= radius; y++) {
-		for (int x = -radius; x <= radius; x++) {
-
-			if (x * x + y * y < radius_squared) {
-				m.set(x, y);
-			} else {
-				m.clear(x, y);
-			}
-		}
-	}
 
 	memset(sight_mask, 0, diameter * diameter);
 	permissive::fov(0, 0, m, *this);

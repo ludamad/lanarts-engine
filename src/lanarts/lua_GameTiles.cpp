@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 
 #define LUAWRAP_LONG_FUNCTIONS
 #include <luawrap/luawrap.h>
@@ -6,11 +7,11 @@
 #include "GameTiles.h"
 
 static bool radius_test(const ldungeon_gen::MapPtr& map, double x, double y, int rad) {
-    return GameTiles(map).radius_test(Pos(x, y), rad);
+    return GameTiles(map).radius_test(Pos(lrint(x), lrint(y)), rad);
 }
 
 static bool line_test(const ldungeon_gen::MapPtr& map, double x1, double y1, double x2, double y2) {
-    return GameTiles(map).line_test(Pos(x1, y1), Pos(x2, y2));
+    return GameTiles(map).line_test(Pos(lrint(x1), lrint(y1)), Pos(x2, y2));
 }
 
 LuaValue lua_gametilesmetatable(lua_State* L) {

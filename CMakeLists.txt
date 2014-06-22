@@ -47,6 +47,11 @@ if(WIN32)
     endif()
 endif()
 
+#add_definitions("-fsanitize=address")
+#        SET (CMAKE_EXE_LINKER_FLAGS
+#                        -fsanitize=address 
+#                                )
+
 # Enable tests
 enable_testing()
 

@@ -23,8 +23,10 @@ public:
 	void matches(int sqr_x, int sqr_y, char* sub_sqrs);
 	void update_seen_map(const BoolGridRef& seen);
 	BBox tiles_covered() {
-		return BBox(ptx - radius, pty - radius, ptx + radius, pty + radius);
+		BBox bbox(ptx - radius, pty - radius, ptx + radius, pty + radius);
+		return bbox.resized_within(BBox(Pos(), map->size()));
 	}
+
 	fov* clone() const;
 private:
 	bool raw_within_fov(int grid_x, int grid_y);

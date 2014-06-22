@@ -10,10 +10,9 @@
 
 #include <lcommon/mtwist.h>
 #include <lcommon/Grid.h>
+#include <ldungeon_gen/Map.h>
 
 #include "common.h"
-
-#include "BoolGridRef.h"
 
 struct FloodFillCoord {
 	int x, y;
@@ -47,9 +46,9 @@ struct FloodFillNode {
 
 class FloodFillPaths {
 public:
-	FloodFillPaths(const BoolGridRef& solidity = BoolGridRef());
+	FloodFillPaths(const ldungeon_gen::MapPtr& map);
 	~FloodFillPaths();
-	void initialize(const BoolGridRef& solidity);
+	void initialize(const ldungeon_gen::MapPtr& map);
 
 	void fill_paths_in_radius(const Pos& source_xy, int radius);
 
@@ -96,9 +95,7 @@ private:
 	void point_to_random_further(MTwist& mt, int sx, int sy);
 	bool can_head(const BBox& bbox, int speed, int dx, int dy);
 
-	/* Possibly shared! */
-	BoolGridRef _solidity;
-
+	ldungeon_gen::MapPtr _map;
 	Grid<FloodFillNode> _path;
 	/* The top left point covered by the flood fill */
 	Pos _topleft_xy;

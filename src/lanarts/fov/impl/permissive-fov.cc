@@ -16,6 +16,23 @@ using std::max;
 using std::min;
 using std::string;
 
+#include "../fov.h"
+
+// Hacked in for Lanarts for performance reasons
+// TODO: See about moving to a more specialized impl
+
+static int isBlocked(short destX, short destY, void * context)
+{
+  fov * typedContext = reinterpret_cast<fov *>(context);
+  return typedContext->isBlocked(destX, destY);
+}
+
+static void visit(short destX, short destY, void * context)
+{
+  fov * typedContext = reinterpret_cast<fov *>(context);
+  typedContext->visit(destX, destY);
+}
+
 namespace
 {
   struct offsetT
@@ -41,8 +58,8 @@ namespace
   {
     offsetT source;
     permissiveMaskT * mask;
-    isBlockedFunction isBlocked;
-    visitFunction visit;
+    isBlockedFunction __isBlocked;
+    visitFunction __visit;
     void * context;
 
     offsetT quadrant;
@@ -315,7 +332,7 @@ namespace
   {
     offsetT adjustedPos(pos.x*state->quadrant.x + state->source.x,
                         pos.y*state->quadrant.y + state->source.y);
-    bool result = state->isBlocked(adjustedPos.x, adjustedPos.y,
+    bool result = isBlocked(adjustedPos.x, adjustedPos.y,
                                    state->context) == 1;
     if ((state->quadrant.x * state->quadrant.y == 1
          && pos.x == 0 && pos.y != 0)
@@ -328,15 +345,15 @@ namespace
     }
     else
     {
-      state->visit(adjustedPos.x, adjustedPos.y, state->context);
+      visit(adjustedPos.x, adjustedPos.y, state->context);
       return result;
     }
   }
 }
 
 void permissiveSquareFov(short sourceX, short sourceY,
-                         int inRadius, isBlockedFunction isBlocked,
-                         visitFunction visit, void * context)
+                         int inRadius, isBlockedFunction __isBlocked,
+                         visitFunction __visit, void * context)
 {
   int radius = max(inRadius, 0);
   permissiveMaskT mask;
@@ -347,18 +364,18 @@ void permissiveSquareFov(short sourceX, short sourceY,
   mask.width = 2*radius + 1;
   mask.height = 2*radius + 1;
   mask.mask = NULL;
-  permissiveFov(sourceX, sourceY, &mask, isBlocked, visit, context);
+  permissiveFov(sourceX, sourceY, &mask, __isBlocked, __visit, context);
 }
 
 void permissiveFov(short sourceX, short sourceY,
-                   permissiveMaskT * mask, isBlockedFunction isBlocked,
-                   visitFunction visit, void * context)
+                   permissiveMaskT * mask, isBlockedFunction __isBlocked,
+                   visitFunction __visit, void * context)
 {
   fovStateT state;
   state.source = offsetT(sourceX, sourceY);
   state.mask = mask;
-  state.isBlocked = isBlocked;
-  state.visit = visit;
+  state.__isBlocked = __isBlocked;
+  state.__visit = __visit;
   state.context = context;
 
   static const int quadrantCount = 4;

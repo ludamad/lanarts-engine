@@ -3,6 +3,8 @@
 #define LUAWRAP_LONG_FUNCTIONS
 #include <luawrap/luawrap.h>
 
+#include <ldungeon_gen/Map.h>
+
 #include "FloodFillPaths.h"
 
 using namespace luawrap;
@@ -35,8 +37,8 @@ LuaValue lua_floodfillmetatable(lua_State* L) {
 	return meta;
 }
 
-static FloodFillPaths new_floodfill(BoolGridRef& solidity) {
-	return FloodFillPaths(solidity);
+static FloodFillPaths new_floodfill(const ldungeon_gen::MapPtr& map) {
+	return FloodFillPaths(map);
 }
 
 int luaopen_FloodFillPaths(lua_State *L) {

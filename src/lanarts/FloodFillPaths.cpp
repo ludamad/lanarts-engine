@@ -62,12 +62,12 @@ static void floodfill(Grid<FloodFillNode>& path, Size size, int sx, int sy) {
 	delete[] heap;
 }
 
-FloodFillPaths::FloodFillPaths(const BoolGridRef& solidity) {
-	initialize(solidity);
+FloodFillPaths::FloodFillPaths(const ldungeon_gen::MapPtr& map) {
+	initialize(map);
 }
 
-void FloodFillPaths::initialize(const BoolGridRef& solidity) {
-	_solidity = solidity;
+void FloodFillPaths::initialize(const ldungeon_gen::MapPtr& map) {
+	_map = map;
 }
 
 FloodFillPaths::~FloodFillPaths() {
@@ -89,7 +89,7 @@ void FloodFillPaths::fill_paths_tile_region(const Pos& tile_xy,
 		for (int y = 0; y < _size.h; y++) {
 			for (int x = 0; x < _size.w; x++) {
 				FloodFillNode* node = get(x, y);
-				node->solid = (*_solidity)[Pos(x + area.x1, y + area.y1)];
+				node->solid = (*_map)[Pos(x + area.x1, y + area.y1)].matches_flags(ldungeon_gen::FLAG_SOLID);
 				node->open = true;
 				node->dx = 0;
 				node->dy = 0;
@@ -105,8 +105,8 @@ void FloodFillPaths::fill_paths_in_radius(const Pos& source_xy, int radius) {
 	perf_timer_begin(FUNCNAME);
 
 	//Use a temporary 'GameView' object to make use of its helper methods
-	GameView view(0, 0, radius * 2, radius * 2, _solidity->width() * TILE_SIZE,
-			_solidity->height() * TILE_SIZE);
+	GameView view(0, 0, radius * 2, radius * 2, _map->width() * TILE_SIZE,
+			_map->height() * TILE_SIZE);
 	view.sharp_center_on(source_xy);
 
 	BBox tiles_covered = view.tile_region_covered();
@@ -214,14 +214,17 @@ PosF FloodFillPaths::interpolated_direction(const BBox& bbox, float speed,
 
 	for (int yy = miny; yy <= maxy; yy++) {
 		for (int xx = minx; xx <= maxx; xx++) {
-			int sx = max(xx * TILE_SIZE, bbox.x1), sy = max(yy * TILE_SIZE,
-					bbox.y1);
-			int ex = min((xx + 1) * TILE_SIZE, bbox.x2), ey = min(
-					(yy + 1) * TILE_SIZE, bbox.y2);
+			int sx = squish(xx * TILE_SIZE, bbox.x1, bbox.x2);
+			int sy = squish(yy * TILE_SIZE, bbox.y1, bbox.y2);
+
+			int ex = squish((xx + 1) * TILE_SIZE, bbox.x1, bbox.x2);
+			int ey = squish((yy + 1) * TILE_SIZE, bbox.y1, bbox.y2);
+
 			int px = xx - _topleft_xy.x, py = yy - _topleft_xy.y;
 			FloodFillNode* p = get(px, py);
 			if (!p->solid) {
 				int sub_area = (ex - sx) * (ey - sy) + 1;
+				LANARTS_ASSERT(sub_area >= 0);
 				/*Make sure all interpolated directions are possible*/
 				if (lenient || can_head(bbox, ispeed, p->dx, p->dy)) {
 					acc_x += p->dx * sub_area;
@@ -231,7 +234,7 @@ PosF FloodFillPaths::interpolated_direction(const BBox& bbox, float speed,
 		}
 	}
 	float mag = sqrt(float(acc_x * acc_x + acc_y * acc_y));
-	if (mag == 0) {
+	if (mag == 0 || isnan(mag)) {
 		if (!lenient) {
 			return interpolated_direction(bbox, speed, true);
 		} else {

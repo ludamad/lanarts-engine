@@ -23,7 +23,7 @@ static int extract_solidity_and_seethrough_maps(lua_State* L) {
     return 2;
 }
 
-int luaopen_lanarts_util(lua_State *L) {
+int luaopen_core_util(lua_State *L) {
     LuaValue module = LuaValue::newtable(L);
     module["extract_solidity_and_seethrough_maps"].bind_function(extract_solidity_and_seethrough_maps);
     module.push();
