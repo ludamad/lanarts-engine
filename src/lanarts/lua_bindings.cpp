@@ -27,7 +27,8 @@ void lua_lanarts_core_bindings(lua_State* L) {
     lua_extend(L, luaopen_GameTiles, "core.GameTiles");
     lua_extend(L, luaopen_GameView, "core.GameView");
     lua_extend(L, luaopen_FieldOfView, "core.FieldOfView");
-    lua_extend(L, luaopen_core_util, "core.util");
+    // TODO: Not needed right now
+//    lua_extend(L, luaopen_core_util, "core.util");
 
 
     LuaValue module = LuaValue::newtable(L);
