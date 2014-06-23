@@ -17,6 +17,8 @@ include_directories(
     "${HANDROLLED}" # for net
     "${HANDROLLED}/luawrap-lib/include"
     "${HANDROLLED}/sound-lib/include"
+    "${EXTERNAL}/moai-dev/3rdparty/sdl2-2.0.0/include"
+
     "${BUNDLED}" # for rvo2 
     "${EXTERNAL}/luajit-2.0/src"
 )
@@ -34,7 +36,7 @@ add_library( lanarts-libs
              ${lanarts-src2}
              ${lanarts-src3}
              ${lanarts-src4}
-			 ${lanarts-src5}
+             ${lanarts-src5}
 )
 
 target_link_libraries(lanarts-libs
@@ -42,6 +44,7 @@ target_link_libraries(lanarts-libs
 #    lua_box2d
     lanarts_dungeon_gen
     lcommon
+    ldraw
     luawrap
     libxmi
     luayaml

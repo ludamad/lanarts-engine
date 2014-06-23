@@ -21,6 +21,10 @@ int luaopen_enet(lua_State* L);
 //int luaopen_b2_vendor(lua_State* L);
 }
 
+int luaopen_SDL(lua_State *L);
+int luaopen_ldraw(lua_State *L);
+int luaopen_SerializeBuffer(lua_State *L);
+
 extern "C" {
 #include <luajit.h>
 }
@@ -64,6 +68,10 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luaopen_linenoise, "linenoise");
 	lua_extend(L, luaopen_luv, "luv");
     lua_extend(L, luaopen_enet, "enet");
+    lua_extend(L, luaopen_SDL, "sdl");
+    lua_extend(L, luaopen_ldraw, "lanarts.draw");
+    lua_extend(L, luaopen_SerializeBuffer, "DataBuffer");
+
 //	lua_extend(L, luaopen_b2_vendor, "box2d");
 
 	lua_lanarts_core_bindings(L);

@@ -27,6 +27,12 @@ static int sb_read_object(lua_State* L) {
     return 1;
 }
 
+static int sb_tostring(lua_State* L) {
+    SerializeBuffer* sb = luawrap::get<SerializeBuffer*>(L, 1);
+    lua_pushlstring(L, sb->data(), sb->size());
+    return 1;
+}
+
 LuaValue lua_serializebuffermetatable(lua_State* L) {
 	LUAWRAP_SET_TYPE(SerializeBuffer&);
 
@@ -36,7 +42,10 @@ LuaValue lua_serializebuffermetatable(lua_State* L) {
 
 	methods["write"].bind_function(sb_write_object);
     methods["read"].bind_function(sb_read_object);
+    methods["tostring"].bind_function(sb_tostring);
 
+    LUAWRAP_METHOD(methods, clear, OBJ.clear());
+    LUAWRAP_METHOD(methods, write_byte, OBJ.write_byte(lua_tointeger(L, 2)));
 	LUAWRAP_METHOD(methods, write_int, OBJ.write_int(lua_tointeger(L, 2)));
 	LUAWRAP_METHOD(methods, write_double, OBJ.write(lua_tonumber(L, 2)));
 	LUAWRAP_METHOD(methods, write_raw,
@@ -46,6 +55,7 @@ LuaValue lua_serializebuffermetatable(lua_State* L) {
 	);
 	LUAWRAP_METHOD(methods, move_read_position, OBJ.move_read_position(lua_tointeger(L, 2)));
 
+	LUAWRAP_METHOD(methods, read_byte, OBJ.read_byte());
 	LUAWRAP_GETTER(methods, read_int, OBJ.read_int());
 	LUAWRAP_GETTER(methods, read_double, OBJ.read_int());
 	LUAWRAP_METHOD(methods, read_raw,
@@ -72,6 +82,11 @@ static int serializebuffer_create(lua_State* L) {
 
 	if (noarg) {
 		new ((SerializeBuffer*)data) SerializeBuffer();
+	} else if (lua_isstring(L, 1)){
+        new ((SerializeBuffer*)data) SerializeBuffer();
+        size_t size;
+        const char* msg = lua_tolstring(L, 1, &size);
+        ((SerializeBuffer*)data)->write_raw(msg, size);
 	} else {
 		LuaStackValue args(L, 1);
 		if (!args["output_file"].isnil()) {
@@ -85,12 +100,13 @@ static int serializebuffer_create(lua_State* L) {
 	return 1;
 }
 
-LuaValue lua_serializebuffer_type(lua_State *L) {
+int luaopen_SerializeBuffer(lua_State *L) {
 	luawrap::install_userdata_type<SerializeBuffer, &lua_serializebuffermetatable>();
 
 	LuaValue type(L);
 	type.newtable();
 	type["create"].bind_function(serializebuffer_create);
+	type.push();
 
-	return type;
+	return 1;
 }

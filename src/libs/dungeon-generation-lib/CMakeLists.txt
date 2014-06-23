@@ -7,8 +7,8 @@ add_definitions( -std=c++98 )
 
 include_directories(
 	include/ldungeon_gen
-        ${DEPS}/lua-5.1
-        ${DEPS}/libxmi
+    ${DEPS}/lua-5.1
+    ${DEPS}/libxmi
 	../common-lib/include
 	../draw-lib/include
 	../luawrap-lib/include

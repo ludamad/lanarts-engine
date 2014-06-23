@@ -11,6 +11,7 @@ int luaopen_GameTiles(lua_State* L);
 int luaopen_GameView(lua_State* L);
 int luaopen_core_util(lua_State* L);
 int luaopen_FieldOfView(lua_State *L);
+int luaopen_TextField(lua_State *L);
 
 static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name) {
     lua_getfield(L, LUA_GLOBALSINDEX, "package");
@@ -27,6 +28,7 @@ void lua_lanarts_core_bindings(lua_State* L) {
     lua_extend(L, luaopen_GameTiles, "core.GameTiles");
     lua_extend(L, luaopen_GameView, "core.GameView");
     lua_extend(L, luaopen_FieldOfView, "core.FieldOfView");
+    lua_extend(L, luaopen_TextField, "core.TextField");
     // TODO: Not needed right now
 //    lua_extend(L, luaopen_core_util, "core.util");
 
