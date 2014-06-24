@@ -2,10 +2,7 @@ cmake_minimum_required( VERSION 2.6 )
 
 PROJECT(project_ldraw)
 
-FIND_PACKAGE(SDL REQUIRED)
-FIND_PACKAGE(SDL_image REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
-include(FindFreetype)
 
 set( SRC ../)
 set( DEPS ../../../dependencies/bundled )
@@ -18,10 +15,7 @@ include_directories(
 	"${SRC}/luawrap-lib/include"
 	${DEPS}/UnitTest++
 	${DEPS}/lua-5.1
-	${SDL_INCLUDE_DIR} 
-	${SDLIMAGE_INCLUDE_DIR} 
 	${OpenGL_INCLUDE_DIRS} 		
-	${FREETYPE_INCLUDE_DIRS} 
 )
 
 file(GLOB ldraw_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
@@ -43,10 +37,6 @@ set(LINKEDDEPS
 	luawrap
 	lcommon
 	${OPENGL_gl_LIBRARY}
-	${SDLIMAGE_LIBRARY}
-	${SDL_LIBRARY}
-	${SDLMAIN_LIBRARY}
-	${FREETYPE_LIBRARIES}
 )
 
 #add_executable( ldraw_tests ${ldraw_tests} )

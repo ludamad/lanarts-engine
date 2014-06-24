@@ -10,18 +10,22 @@
 
 #include <lcommon/geometry.h>
 
-#include <SDL.h>
-#include <SDL_opengl.h>
+//#include <SDL.h>
+//#include <SDL_opengl.h>
+
+#include <GL/gl.h>
 
 #include "DrawOptions.h"
+
+#define GL_BGRA 0
 
 struct GLImage {
 	GLImage() {
 		texture = 0;
 	}
-	GLImage(SDL_RWops* rw_ops) {
-
-	}
+//	GLImage(SDL_RWops* rw_ops) {
+//
+//	}
 	GLImage(const std::string& filename) {
 		texture = 0;
 		initialize(filename);
@@ -48,7 +52,7 @@ struct GLImage {
 
 	int width, height;
 	float texw, texh;
-	GLuint texture;
+	unsigned int texture;
 };
 
 #endif /* GLIMAGE_H_ */

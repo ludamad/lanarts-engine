@@ -6,77 +6,80 @@
 #include <lcommon/math_util.h>
 #include <lcommon/fatal_error.h>
 
-#include <SDL_opengl.h>
+//#include <SDL_opengl.h>
 
 //Surpress some multiple definition warnings:
 #undef GL_GLEXT_VERSION
-#include <SDL_image.h>
+//#include <SDL_image.h>
 #include <GL/glu.h>
 
 #include "ldraw_assert.h"
 
 #include "GLImage.h"
 
+// TODO: Nix this library completely
+struct SDL_Surface;
+
 /* Utility function for conversion between SDL surfaces and GL surfaces */
 static GLuint SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord) {
-	GLuint texture;
-	int w, h;
-	SDL_Surface *image;
-	SDL_Rect area;
-	Uint32 saved_flags;
-	Uint8 saved_alpha;
-
-	/* Use the surface width and height expanded to powers of 2 */
-	w = power_of_two_round(surface->w);
-	h = power_of_two_round(surface->h);
-	texcoord[0] = 0.0f; /* Min X */
-	texcoord[1] = 0.0f; /* Min Y */
-	texcoord[2] = (GLfloat)surface->w / w; /* Max X */
-	texcoord[3] = (GLfloat)surface->h / h; /* Max Y */
-
-	image = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* OpenGL RGBA masks */
-			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
-#else
-			0xFF000000,
-			0x00FF0000,
-			0x0000FF00,
-			0x000000FF
-#endif
-			);
-	if (image == NULL) {
-		return 0;
-	}
-
-	/* Save the alpha blending attributes */
-	saved_flags = surface->flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
-	saved_alpha = surface->format->alpha;
-	if ((saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
-		SDL_SetAlpha(surface, 0, 0);
-	}
-
-	/* Copy the surface into the GL texture image */
-	area.x = 0;
-	area.y = 0;
-	area.w = surface->w;
-	area.h = surface->h;
-	SDL_BlitSurface(surface, &area, image, &area);
-
-	/* Restore the alpha blending attributes */
-	if ((saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
-		SDL_SetAlpha(surface, saved_flags, saved_alpha);
-	}
-
-	/* Create an OpenGL texture for the image */
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-			image->pixels);
-	SDL_FreeSurface(image); /* No longer needed */
-
-	return texture;
+//	GLuint texture;
+//	int w, h;
+//	SDL_Surface *image;
+//	SDL_Rect area;
+//	Uint32 saved_flags;
+//	Uint8 saved_alpha;
+//
+//	/* Use the surface width and height expanded to powers of 2 */
+//	w = power_of_two_round(surface->w);
+//	h = power_of_two_round(surface->h);
+//	texcoord[0] = 0.0f; /* Min X */
+//	texcoord[1] = 0.0f; /* Min Y */
+//	texcoord[2] = (GLfloat)surface->w / w; /* Max X */
+//	texcoord[3] = (GLfloat)surface->h / h; /* Max Y */
+//
+//	image = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32,
+//#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* OpenGL RGBA masks */
+//			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
+//#else
+//			0xFF000000,
+//			0x00FF0000,
+//			0x0000FF00,
+//			0x000000FF
+//#endif
+//			);
+//	if (image == NULL) {
+//		return 0;
+//	}
+//
+//	/* Save the alpha blending attributes */
+//	saved_flags = surface->flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
+//	saved_alpha = surface->format->alpha;
+//	if ((saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
+//		SDL_SetAlpha(surface, 0, 0);
+//	}
+//
+//	/* Copy the surface into the GL texture image */
+//	area.x = 0;
+//	area.y = 0;
+//	area.w = surface->w;
+//	area.h = surface->h;
+//	SDL_BlitSurface(surface, &area, image, &area);
+//
+//	/* Restore the alpha blending attributes */
+//	if ((saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
+//		SDL_SetAlpha(surface, saved_flags, saved_alpha);
+//	}
+//
+//	/* Create an OpenGL texture for the image */
+//	glGenTextures(1, &texture);
+//	glBindTexture(GL_TEXTURE_2D, texture);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+//			image->pixels);
+//	SDL_FreeSurface(image); /* No longer needed */
+//
+//	return texture;
 }
 
 GLImage::~GLImage() {
@@ -86,39 +89,39 @@ GLImage::~GLImage() {
 }
 
 void GLImage::initialize(const std::string& filename) {
-
-	SDL_Surface* image;
-	GLfloat texcoord[4];
-
-	if (filename.empty() || texture != 0) {
-		return;
-	}
-
-	/* Load the image using SDL_image library */
-	image = IMG_Load(filename.c_str());
-	if (image == NULL) {
-		printf("Image '%s' could not be loaded\n", filename.c_str());
-		printf("SDL reported: '%s'\n", IMG_GetError());
-		fatal_error();
-	}
-
-	width = image->w;
-	height = image->h;
-
-	/* Convert the image into an OpenGL texture */
-	texture = SDL_GL_LoadTexture(image, texcoord);
-
-	if (!texture) {
-		printf("Texture from image '%s' could not be loaded\n",
-				filename.c_str());
-		fatal_error();
-	}
-
-	texw = texcoord[2];
-	texh = texcoord[3];
-
-	/* We don't need the original image anymore */
-	SDL_FreeSurface(image);
+//
+//	SDL_Surface* image;
+//	GLfloat texcoord[4];
+//
+//	if (filename.empty() || texture != 0) {
+//		return;
+//	}
+//
+//	/* Load the image using SDL_image library */
+//	image = IMG_Load(filename.c_str());
+//	if (image == NULL) {
+//		printf("Image '%s' could not be loaded\n", filename.c_str());
+//		printf("SDL reported: '%s'\n", IMG_GetError());
+//		fatal_error();
+//	}
+//
+//	width = image->w;
+//	height = image->h;
+//
+//	/* Convert the image into an OpenGL texture */
+//	texture = SDL_GL_LoadTexture(image, texcoord);
+//
+//	if (!texture) {
+//		printf("Texture from image '%s' could not be loaded\n",
+//				filename.c_str());
+//		fatal_error();
+//	}
+//
+//	texw = texcoord[2];
+//	texh = texcoord[3];
+//
+//	/* We don't need the original image anymore */
+//	SDL_FreeSurface(image);
 }
 
 static void gl_subimage_from_bytes(GLImage& img, const BBox& region, char* data,

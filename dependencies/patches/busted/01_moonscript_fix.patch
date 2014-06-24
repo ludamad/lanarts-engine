@@ -1,0 +1,10 @@
+diff --git a/src/moon.lua b/src/moon.lua
+index dfc1ba2..e24818f 100644
+--- a/src/moon.lua
++++ b/src/moon.lua
+@@ -1,4 +1,4 @@
+-local success, ms = pcall(function() return require("moonscript") end)
++local success, ms = pcall(function() return require("moonscript.base") end)
+ 
+ local is_moon = function(fname)
+   return fname:find(".moon", #fname-6, true) and true or false

@@ -1,7 +1,9 @@
-#include <SDL_opengl.h>
+//#include <SDL_opengl.h>
 
 #include <cstdio>
 #include <cmath>
+
+#include <GL/gl.h>
 
 #include "draw.h"
 #include "ldraw_assert.h"
