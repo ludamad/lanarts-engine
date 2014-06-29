@@ -237,6 +237,10 @@ public:
 		return _read_position;
 	}
 
+	bool can_read() const {
+	    return read_position() < size();
+	}
+
 	void close();
 	void clear();
 	void flush();

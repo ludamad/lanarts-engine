@@ -3,6 +3,7 @@
 
 #include "lanarts/opengl/gl_extensions.h"
 #include <luawrap/luawrap.h>
+#include <lcommon/strformat.h>
 
 #include <stdexcept>
 
@@ -62,6 +63,7 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 
     // OpenGL configuration bindings
     luawrap::globals(L)["gl_set_vsync"].bind_function(gl_set_vsync);
+    luawrap::globals(L)["string"]["pack"].bind_function(str_pack);
 
 	lua_extend(L, luayaml_module, "yaml");
 	lua_extend(L, luaopen_lpeg, "lpeg");
