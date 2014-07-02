@@ -22,13 +22,38 @@ static void copy(const BoolGridRef& ref1, BoolGridRef& ref2) {
     *ref2 = *ref1;
 }
 
+/* Retrieve data into a preallocated Lua table */
+static int lget_row(lua_State* L) {
+    BoolGridRef grid = luawrap::get<BoolGridRef>(L, 1);
+    // Note, Lua indexing corrections are applied
+    int x1 = luaL_checkinteger(L, 3) - 1;
+    int x2 = luaL_checkinteger(L, 4);
+    int y = luaL_checkinteger(L, 5) - 1;
+    // What to use outside of map bounds?
+    bool fill = lua_toboolean(L, 6);
+    int w = grid->width(), h = grid->height();
+    Pos pos(x1, y);
+    int i = 1;
+    for (; pos.x < x2; pos.x++) {
+        if (pos.y < 0 || pos.y >= h || pos.x < 0 || pos.x >= w) {
+            lua_pushboolean(L, fill);
+        } else {
+            lua_pushboolean(L, (*grid)[pos]);
+        }
+        lua_rawseti(L, 2, i);
+        i++;
+    }
+    return 0;
+}
+
 LuaValue lua_boolgridmetatable(lua_State* L) {
 	LuaValue meta = luameta_new(L, "BoolGrid");
 	LuaValue methods = luameta_constants(meta);
 
 	methods["get_size"].bind_function(get_size);
 	methods["clone"].bind_function(_clone);
-	methods["copy"].bind_function(copy);
+    methods["copy"].bind_function(copy);
+    methods["get_row"].bind_function(lget_row);
 
     LUAWRAP_SET_TYPE(BoolGridRef);
 

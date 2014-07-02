@@ -18,6 +18,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             -fsanitize=address 
         )
         add_definitions(
+            -DLUAJIT_USE_GDBJIT
+
            -fsanitize=address 
         )
     endif()

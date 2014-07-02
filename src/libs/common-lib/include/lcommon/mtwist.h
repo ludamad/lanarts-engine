@@ -75,6 +75,7 @@ public:
 		return genrand_int32();
 	}
 	int rand(int max) {
+	    if (max == 0) throw "WHAT";
 		if (max == 1)
 			return 0;
 		_amount_generated++;

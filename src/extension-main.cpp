@@ -30,6 +30,13 @@ extern "C" {
 #include <luajit.h>
 }
 
+// For luajit GDB helpers:
+lua_State* globalL = NULL;
+std::string _luatrace() {
+    luawrap::globals(globalL)["debug"]["traceback"].push();
+    return luawrap::call<std::string>(globalL);
+}
+
 // LuaJIT only: Catch C++ exceptions and convert them to Lua error messages.
 static int luajit_wrap_exceptions(lua_State *L, lua_CFunction f) {
     try {
@@ -58,6 +65,8 @@ static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name
 void lua_lanarts_core_bindings(lua_State* L);
 
 void LanartsMOAILuaExtHook(lua_State* L) {
+    globalL = L;
+
     // LuaJIT configuration
     lua_vm_configure(L);
 

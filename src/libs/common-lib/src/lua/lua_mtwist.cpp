@@ -4,6 +4,7 @@
  */
 
 #include <cassert>
+#include <cmath>
 
 #include <luawrap/LuaValue.h>
 #include <luawrap/luameta.h>
@@ -11,6 +12,8 @@
 #include <luawrap/types.h>
 
 #include "mtwist.h"
+
+std::string _luatrace();
 
 static int random(lua_State* L) {
     int n_args = lua_gettop(L);
@@ -30,6 +33,7 @@ static int random(lua_State* L) {
     lua_pushinteger(L, num);
     return 1;
 }
+
 
 static int randomf(lua_State* L) {
     int n_args = lua_gettop(L);
@@ -52,6 +56,15 @@ static int randomf(lua_State* L) {
     return 1;
 }
 
+static double random_round(MTwist* mtwist, double val) {
+    double f = floor(val);
+    if (mtwist->randf() > (val - f)) {
+        return f + 1;
+    } else {
+        return f;
+    }
+}
+
 static double guassian(MTwist* mtwist, double average, double std_dev, int n_trials) {
     return mtwist->guassian(average, std_dev, n_trials);
 }
@@ -65,7 +78,7 @@ LuaValue lua_mtwistmetatable(lua_State* L) {
 	LuaValue methods = luameta_constants(meta);
 
 	methods["random"].bind_function(random);
-	methods["randomf"].bind_function(randomf);
+	methods["random_round"].bind_function(random_round);
 	methods["guassian"].bind_function(guassian);
 	methods["amount_generated"].bind_function(amount_generated);
 

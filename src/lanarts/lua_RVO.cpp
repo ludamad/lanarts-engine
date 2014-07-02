@@ -47,6 +47,14 @@ static int get_velocity(lua_State* L) {
     return 2;
 }
 
+static int get_preferred_velocity(lua_State* L) {
+    RVOSimulator* sim = luawrap::get<RVOSimulator*>(L, 1);
+    Vector2 velocity = sim->getAgentPrefVelocity(lua_tointeger(L, 2));
+    lua_pushnumber(L, velocity.x());
+    lua_pushnumber(L, velocity.y());
+    return 2;
+}
+
 static void step(RVOSimulator& sim) {
     sim.doStep();
 }
@@ -59,6 +67,7 @@ LuaValue lua_rvoworldmetatable(lua_State* L) {
 	methods["remove_instance"].bind_function(remove_instance);
 	methods["update_instance"].bind_function(update_instance);
 	methods["get_velocity"].bind_function(get_velocity);
+	methods["get_preferred_velocity"].bind_function(get_preferred_velocity);
 	methods["change_instance_id"].bind_function(change_instance_id);
 	methods["step"].bind_function(step);
 

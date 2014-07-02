@@ -317,6 +317,7 @@ int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap,
                             * (inst.target_radius + rad);
                     int dx = inst.x - x, dy = inst.y - y;
                     int dsqr = dx * dx + dy * dy;
+                    printf("GOT dist=%.2f\n", sqrt(dsqr));
                     //want to test sqrt(dsqr) < orad+rad
                     //therefore we test dsqr < (orad+rad)*(orad+rad)
                     if (dsqr < radsqr && inst.solid) {

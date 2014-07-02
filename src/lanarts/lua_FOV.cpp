@@ -16,6 +16,19 @@ static bool within_fov(fov& fov, int grid_x, int grid_y) {
     return fov.within_fov(grid_x - 1, grid_y - 1);
 }
 
+static bool fov_rectangle_visible(fov& fov, BBox rect) {
+    int w = rect.width(), h = rect.height();
+    int mingrid_x = rect.x1 / 32, mingrid_y = rect.y1 / 32;
+    int maxgrid_x = rect.x2 / 32, maxgrid_y = rect.y2 / 32;
+    return fov.within_fov(BBox(mingrid_x, mingrid_y, maxgrid_x, maxgrid_y));
+}
+
+static bool fov_circle_visible(fov& fov, int x, int y, int radius) {
+    return fov_rectangle_visible(fov,
+        BBox(Pos(x,y) - Pos(radius, radius), Size(radius * 2, radius * 2))
+    );
+}
+
 static void update_seen_map(fov& fov, const BoolGridRef& seen) {
     fov.update_seen_map(seen);
 }
@@ -35,6 +48,7 @@ LuaValue lua_fov(lua_State* L) {
 	methods["calculate"].bind_function(calculate);
 	methods["within_fov"].bind_function(within_fov);
 	methods["tiles_covered"].bind_function(tiles_covered);
+	methods["circle_visible"].bind_function(fov_circle_visible);
 	methods["update_seen_map"].bind_function(update_seen_map);
 
 	luameta_gc<fov>(meta);

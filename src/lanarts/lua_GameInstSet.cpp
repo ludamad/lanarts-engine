@@ -74,6 +74,33 @@ static int object_radius_test(lua_State* L) {
     return 1;
 }
 
+const int MAX_RESULTS = 256;
+
+// Copy into a given list
+// object_radius_query(set, id, out results, opt x, opt y, opt rad)
+static int object_radius_query(lua_State* L) {
+    int n_args = lua_gettop(L);
+
+    GameInstSet* set = luawrap::get<GameInstSet*>(L, 1);
+    obj_id id = lua_tointeger(L, 2);
+
+    // Parameter 3 is the table to read results into
+    // Optional arguments, override object properties:
+    double x = n_args >= 4 ? lua_tonumber(L, 4) : -1;
+    double y = n_args >= 5 ? lua_tonumber(L, 5) : -1;
+    double rad = n_args >= 6 ? lua_tonumber(L, 6) : -1;
+
+    GameInst results[MAX_RESULTS];
+    int amount = set->object_radius_test(set->get_instance(id), results, MAX_RESULTS, x, y, rad);
+    for (int i = 0; i < amount; i++) {
+        lua_pushinteger(L, results[i].id);
+        // Write into the result table
+        lua_rawseti(L, 3, i);
+    }
+
+    return 0;
+}
+
 LuaValue lua_gameinstsetmetatable(lua_State* L) {
 	LuaValue meta = luameta_new(L, "GameInstSet");
 	LuaValue methods = luameta_constants(meta);
@@ -85,6 +112,7 @@ LuaValue lua_gameinstsetmetatable(lua_State* L) {
 	methods["copy"].bind_function(copy);
 	methods["step"].bind_function(step);
 	methods["object_radius_test"].bind_function(object_radius_test);
+	methods["object_radius_query"].bind_function(object_radius_query);
 
 	luameta_gc<GameInstSet>(meta);
 
