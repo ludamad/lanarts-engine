@@ -174,10 +174,12 @@ function package_runner(){
     rm -f "$RUNNER_PATH/moai"
     cp "$BASE_FOLDER/scripts/moai-wine-bridge.sh" "$RUNNER_PATH/moai"
     cp "$BUILD_FOLDER/$EXE_NAME" "$RUNNER_PATH/$EXE_NAME"
-    cp "$BUILD_ROOT/lua-deps.zip" "$RUNNER_PATH/.lua-deps.zip"
-    # Ensure .lua-deps is copied over correctly:
-    rm -rf "$RUNNER_PATH/.lua-deps"
-    cp -r "$BUILD_ROOT/lua-deps" "$RUNNER_PATH/.lua-deps"
+    if ! handle_flag "--no-lua-deps" ; then
+        cp "$BUILD_ROOT/lua-deps.zip" "$RUNNER_PATH/.lua-deps.zip"
+        # Ensure .lua-deps is copied over correctly:
+        rm -rf "$RUNNER_PATH/.lua-deps"
+        cp -r "$BUILD_ROOT/lua-deps" "$RUNNER_PATH/.lua-deps"
+    fi
     cp "$BASE_FOLDER/src/loader.lua" "$RUNNER_PATH/loader.lua"
     cat "$BASE_FOLDER/scripts/lanarts-runner-template.sh" | \
         sed "s@__BASE_FOLDER@$RUNNER_PATH@g" > "$RUNNER_PATH/lanarts"
