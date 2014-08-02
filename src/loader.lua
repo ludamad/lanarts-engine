@@ -185,6 +185,8 @@ if os.getenv('LANARTS_MOBDEBUG_SERVER') then
     -- Run a debug server:
     require("mobdebug").listen()
     return -- Do not attempt normal loading
+elseif os.getenv('LANARTS_MOBDEBUG_CLIENT') then 
+    require("mobdebug").start()
 end
 
 -------------------------------------------------------------------------------

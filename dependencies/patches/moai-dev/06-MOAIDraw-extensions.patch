@@ -1,0 +1,410 @@
+diff --git a/src/moai-sim/MOAIDraw.cpp b/src/moai-sim/MOAIDraw.cpp
+index 7b0ac75..b51e986 100644
+--- a/src/moai-sim/MOAIDraw.cpp
++++ b/src/moai-sim/MOAIDraw.cpp
+@@ -26,6 +26,7 @@
+ struct GlyphPlacement {
+ 
+ 	MOAIGlyph* glyph;
++	ZLColorVec color;
+ 	float x;
+ 	float y;
+ };
+@@ -33,7 +34,7 @@ struct GlyphPlacement {
+ struct TextDrawContext {
+ 		
+ 	// Text
+-	STLList < GlyphPlacement > mGlyphs;
++	std::vector < GlyphPlacement > mGlyphs;
+ 
+ 	// Text data
+ 	MOAIFont* mFont;
+@@ -60,17 +61,16 @@ void MOAIDraw::BeginDrawString ( float scale, MOAIFont& font, float fontSize, fl
+ }
+ 
+ //----------------------------------------------------------------//
+-void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float height ) {
+-
++USVec2D MOAIDraw::DrawString ( cc8* text, size_t textLength, float x, float y, float width, float height ) {
+ 	// Sanity check
+-	size_t textLength = strlen ( text );
+-	if ( textLength <= 0 ) return;
++	if ( textLength <= 0 ) return USVec2D(0,0);
+ 	
+ 	// Get the context data
+ 	assert ( g_CurrentTextDrawContext );
+ 
+ 	// Transform the center into 'world' space
+ 	MOAIGfxDevice& gfxDevice = MOAIGfxDevice::Get ();
++
+ 	const ZLMatrix4x4& orgWorldTransform = gfxDevice.GetVertexTransform ( MOAIGfxDevice::VTX_WORLD_TRANSFORM );
+ 	USVec2D pos ( x, y );
+ 	orgWorldTransform.Transform ( pos );
+@@ -88,6 +88,10 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+ 	// Let's draw the string!
+ 	float cursorX = x;
+ 	float cursorY = y + glyphSet->GetAscent() * scale;
++	USVec2D furthestDraw(cursorX, cursorY);
++
++	ZLColorVec currentColor = gfxDevice.GetPenColor();
++
+ 	MOAIGlyph* prevGlyph = 0;
+ 	
+ 	// Update the glyph cache
+@@ -105,23 +109,40 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+ 	assert ( glyphSet );
+ 
+ 	for ( size_t i = 0; i < textLength; i++ ) {
+-
+ 		cc8 c = text [ i ];
++		label_redo:
+ 		if ( c == '\n' ) {
+ 
+ 			// Move to the next line
+ 			cursorX = x;
+ 			cursorY += glyphSet->GetHeight () * scale;
++			furthestDraw.mY = max(furthestDraw.mY, cursorY);
+ 			prevGlyph = 0;
+ 
+ 			if ( height > 0 && (cursorY - y) > height ) {
+ 				break;
+ 			}
+ 		}
++		else if (c == 27) {
++		    // Parse special escape code!
++		    // Assume next 4 bytes form color
++		    if (i + 4 > textLength) {
++		        throw "Invalid escape code in DrawString!";
++		    }
++		    u8 r = text[i], g = text[i+1], b = text[i+2], a = text[i+3];
++		    u32 col = (r << 0x00) | (g << 0x08 ) | (b << 0x10 ) | (a << 0x18 );
++		    currentColor.SetRGBA(col);
++		    i += 4;
++		}
+ 		else {
+ 
+ 			if ( width > 0 && (cursorX - x) > width ) {
+-				continue;
++	            // Move to the next line
++	            cursorX = x;
++	            cursorY += glyphSet->GetHeight () * scale;
++	            furthestDraw.mY = max(furthestDraw.mY, cursorY);
++	            prevGlyph = 0;
++				goto label_redo;
+ 			}
+ 
+ 			// Get the glyph for the current character
+@@ -132,7 +153,7 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+ 				MOAITextureBase* glyphTexture = font.GetGlyphTexture ( *glyph );
+ 				if ( glyphTexture ) {
+ 
+-					GlyphPlacement placement = { glyph, cursorX, cursorY };
++					GlyphPlacement placement = { glyph, currentColor, cursorX, cursorY };
+ 					g_CurrentTextDrawContext->mGlyphs.push_back( placement );
+ 				}
+ 
+@@ -145,24 +166,27 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+ 
+ 				// Move the cursor
+ 				cursorX += glyph->GetAdvanceX () * scale;
++				furthestDraw.mX = max(furthestDraw.mX, cursorX);
+ 			}
+ 
+ 			prevGlyph = glyph;
+ 		}
+ 	}
++	return USVec2D(furthestDraw.mX - x, furthestDraw.mY - y);
+ }
+ 
+ //----------------------------------------------------------------//
+-void MOAIDraw::DrawString	( cc8* text, float x, float y, float scale, MOAIFont& font, float fontSize, float shadowOffsetX, float shadowOffsetY, float width, float height ) {
++USVec2D MOAIDraw::DrawString	( cc8* text, size_t textLength, float x, float y, float scale, MOAIFont& font, float fontSize, float shadowOffsetX, float shadowOffsetY, float width, float height, float originX, float originY) {
+ 
+ 	BeginDrawString ( scale, font, fontSize, shadowOffsetX, shadowOffsetY );
+-	DrawString ( text, x, y, width, height );
+-	EndDrawString ();
++	USVec2D size = DrawString ( text, textLength, x, y, width, height );
++
++	EndDrawString (USVec2D(floor(-size.mX * originX), floor(-size.mY * originY)));
++	return size;
+ }
+ 
+ //----------------------------------------------------------------//
+-void MOAIDraw::EndDrawString () {
+-
++void MOAIDraw::EndDrawString (USVec2D offset) {
+ 	// Setup for drawing
+ 	MOAIGfxDevice& gfxDevice = MOAIGfxDevice::Get ();
+ 
+@@ -180,7 +204,7 @@ void MOAIDraw::EndDrawString () {
+ 	// Apply render state
+ 	gfxDevice.SetShaderPreset ( MOAIShaderMgr::FONT_SHADER );
+ 	gfxDevice.SetVertexMtxMode ( MOAIGfxDevice::VTX_STAGE_WORLD, MOAIGfxDevice::VTX_STAGE_PROJ );
+-	gfxDevice.SetBlendMode ( ZGL_BLEND_FACTOR_ONE, ZGL_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA );
++	gfxDevice.SetBlendMode ( ZGL_BLEND_FACTOR_SRC_ALPHA, ZGL_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA );
+ 	MOAIQuadBrush::BindVertexFormat ( gfxDevice );
+ 
+ 	// Get the context data
+@@ -201,24 +225,26 @@ void MOAIDraw::EndDrawString () {
+ 
+ 		numPasses = 2;		
+ 		gfxDevice.SetPenColor ( 0, 0, 0, 1 );
+-		offsetX = shadowOffsetX;
+-		offsetY = shadowOffsetY;
++		offsetX = shadowOffsetX + offset.mX;
++		offsetY = shadowOffsetY + offset.mY;
+ 	}
+ 
+ 	for ( u32 pass = 0; pass < numPasses; pass++ ) {
+-
+ 		if ( pass == 1 || numPasses == 1 ) {
+ 			gfxDevice.SetPenColor ( penColor );
+-			offsetX = 0;
+-			offsetY = 0;
++			offsetX = offset.mX;
++			offsetY = offset.mY;
+ 		}
+ 
+-		STLList < GlyphPlacement >::const_iterator it;
++		std::vector < GlyphPlacement >::const_iterator it;
+ 		for ( it = g_CurrentTextDrawContext->mGlyphs.begin (); it != g_CurrentTextDrawContext->mGlyphs.end (); ++it ) {
+ 
+ 			const GlyphPlacement& glyphPlacement = *it;
+ 			MOAIGlyph* glyph = glyphPlacement.glyph;
+ 			MOAITextureBase* glyphTexture = font.GetGlyphTexture ( *glyph );
++			if (pass == 0) {
++	            gfxDevice.SetPenColor ( glyphPlacement.color );
++			}
+ 			glyph->Draw ( *glyphTexture, glyphPlacement.x + offsetX, glyphPlacement.y + offsetY, scale );
+ 		}
+ 	}
+@@ -533,14 +559,26 @@ int MOAIDraw::_fillRect ( lua_State* L ) {
+ int MOAIDraw::_drawTexture ( lua_State* L ) {
+ 
+ 	MOAILuaState state ( L );
+-	
+-	float x0 = state.GetValue < float >( 1, 0.0f );
+-	float y0 = state.GetValue < float >( 2, 0.0f );
+-	float x1 = state.GetValue < float >( 3, 0.0f );
+-	float y1 = state.GetValue < float >( 4, 0.0f );
+-	MOAITexture* texture = (MOAITexture*)MOAITexture::AffirmTexture ( state, 5 );
+ 
+-	MOAIDraw::DrawTexture ( x0, y0, x1, y1, texture );
++	MOAITexture* texture = (MOAITexture*)MOAITexture::AffirmTexture ( state, 1 );
++
++	float x0 = state.GetValue < float >( 2, 0.0f );
++	float y0 = state.GetValue < float >( 3, 0.0f );
++	float x1 = state.GetValue < float >( 4, 0.0f );
++	float y1 = state.GetValue < float >( 5, 0.0f );
++
++
++    float ux0 = state.GetValue < float >( 6, 0.0f );
++    float uy0 = state.GetValue < float >( 7, 0.0f );
++    float ux1 = state.GetValue < float >( 8, 1.0f );
++    float uy1 = state.GetValue < float >( 9, 1.0f );
++    // TODO: Too many parameters?
++    float r = state.GetValue < float >( 10, 1.0f );
++    float g = state.GetValue < float >( 11, 1.0f );
++    float b = state.GetValue < float >( 12, 1.0f );
++    float alpha = state.GetValue < float >( 13, 1.0f );
++
++	MOAIDraw::DrawTexture ( x0, y0, x1, y1, ux0, uy0, ux1, uy1, r, g, b, alpha, texture );
+ 	return 0;
+ }
+ 
+@@ -554,8 +592,11 @@ int MOAIDraw::_drawTexture ( lua_State* L ) {
+ 	@in		number x		Left position
+ 	@in		number y		Top position
+ 	@in		number scale
+-	@in		number shadowOffsetX
+-	@in		number shadowOffsetY
++    @in     number shadowOffsetX
++    @in     number shadowOffsetY
++    @in     number originX
++    @in     number originY
++    @in     number maxWidth Optional, the maximum with of the text drawing. Default 0 (no maximum).
+ 	@out	nil
+ */
+ int MOAIDraw::_drawText ( lua_State* L ) {
+@@ -563,28 +604,82 @@ int MOAIDraw::_drawText ( lua_State* L ) {
+ 	MOAILuaState state ( L );
+ 
+ 	// TODO	
+-	//cc8* text = lua_tostring ( state, 3 );
+-	//if ( text ) {
++	size_t textLength;
++	cc8* text = lua_tolstring ( state,  3, &textLength);
++	if ( text ) {
++		float x = state.GetValue < float >( 4, 0.0f );
++		float y = state.GetValue < float >( 5, 0.0f );
++		float scale = state.GetValue < float >( 6, 1.0f );
+ 
+-	//	float x = state.GetValue < float >( 4, 0.0f );
+-	//	float y = state.GetValue < float >( 5, 0.0f );
+-	//	float scale = state.GetValue < float >( 6, 1.0f );
++		float shadowOffsetX = state.GetValue < float >( 7, 0.0f );
++		float shadowOffsetY = state.GetValue < float >( 8, 0.0f );
+ 
+-	//	float shadowOffsetX = state.GetValue < float >( 7, 0.0f );
+-	//	float shadowOffsetY = state.GetValue < float >( 8, 0.0f );
++        float originX = state.GetValue < float >( 9, 0.0f );
++        float originY = state.GetValue < float >( 10, 0.0f );
++        float maxWidth = state.GetValue < float >( 11, 0.0f );
+ 
+-	//	MOAIFont* font = state.GetLuaObject < MOAIFont >( 1, true );
+-	//	if ( font ) {
++		MOAIFont* font = state.GetLuaObject < MOAIFont >( 1, true );
++		if ( font ) {
+ 
+-	//		float fontSize = state.GetValue < float >( 2, font->GetDefaultSize () );
++			float fontSize = state.GetValue < float >( 2, font->GetDefaultSize () );
+ 
+-	//		MOAIDraw::DrawText ( text, x, y, scale, *font, fontSize, shadowOffsetX, shadowOffsetY, 0, 0 );
+-	//	}
+-	//}
++			USVec2D size = MOAIDraw::DrawString ( text, textLength, x, y, scale, *font, fontSize, shadowOffsetX, shadowOffsetY, maxWidth, 0, originX, originY);
++			lua_pushnumber(L, size.mX);
++			lua_pushnumber(L, size.mY);
++			return 2;
++		}
++	}
+ 
+ 	return 0;
+ }
+ 
++//----------------------------------------------------------------//
++/** @name   textSize
++    @text   Draws a string.
++
++    @in     MOAIFont font
++    @in     number size     Font size
++    @in     string text     The string to test the size of.
++    @in     number scale
++    @in     number maxWidth Optional, the maximum with of the text drawing. Default 0 (no maximum).
++    @out    nil
++*/
++int MOAIDraw::_textSize ( lua_State* L ) {
++
++    MOAILuaState state ( L );
++
++    // TODO
++    size_t textLength;
++    cc8* text = lua_tolstring ( state, 3, &textLength);
++    float textw = 0, texth = 0;
++    if ( text ) {
++        float scale = state.GetValue < float >( 4, 1.0f );
++        float maxWidth = state.GetValue < float >( 5, 0.0f );
++
++        MOAIFont* font = state.GetLuaObject < MOAIFont >( 1, true );
++        if ( font ) {
++
++            float fontSize = state.GetValue < float >( 2, font->GetDefaultSize () );
++
++            MOAIDraw::BeginDrawString ( scale, *font, fontSize, 0,0);
++            USVec2D vec = MOAIDraw::DrawString(text, textLength, 0,0, maxWidth,0);
++
++            // TODO: Make less hacky.
++            g_CurrentTextDrawContext->mFont = 0;
++            g_CurrentTextDrawContext->mGlyphs.clear();
++            g_CurrentTextDrawContext = 0;
++
++            textw = vec.mX;
++            texth = vec.mY;
++        }
++    }
++
++    lua_pushnumber(L, textw);
++    lua_pushnumber(L, texth);
++    return 2;
++}
++
++
+ //================================================================//
+ // MOAIDraw
+ //================================================================//
+@@ -1082,7 +1177,7 @@ void MOAIDraw::DrawRectOutline ( float left, float top, float right, float botto
+ }
+ 
+ //----------------------------------------------------------------//
+-void MOAIDraw::DrawTexture ( float left, float top, float right, float bottom, MOAITexture* texture ) {
++void MOAIDraw::DrawTexture ( float left, float top, float right, float bottom, float uleft, float utop, float uright, float ubottom, float r, float g, float b, float alpha, MOAITexture* texture ) {
+ 	
+ 	MOAIGfxDevice& gfxDevice = MOAIGfxDevice::Get ();
+ 	
+@@ -1090,18 +1185,18 @@ void MOAIDraw::DrawTexture ( float left, float top, float right, float bottom, M
+ 		
+ 		gfxDevice.Flush ();
+ 
+-		gfxDevice.SetBlendMode ( ZGL_BLEND_FACTOR_ONE, ZGL_BLEND_FACTOR_ZERO );
++		gfxDevice.SetBlendMode ( ZGL_BLEND_FACTOR_SRC_ALPHA, ZGL_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA  );
+ 		gfxDevice.SetTexture ( texture );
+ 		gfxDevice.SetShaderPreset ( MOAIShaderMgr::DECK2D_SHADER );
+ 
+ 		const ZLColorVec& orgColor = gfxDevice.GetPenColor ();
+-		gfxDevice.SetPenColor ( 1, 1, 1, 1 );
++		gfxDevice.SetPenColor ( r, g, b, alpha );
+ 		
+ 		MOAIQuadBrush::BindVertexFormat ( gfxDevice );
+ 
+ 		MOAIQuadBrush quad;
+ 		quad.SetVerts ( left, top, right, bottom );
+-		quad.SetUVs ( 0, 0, 1, 1 );		
++		quad.SetUVs ( uleft, utop, uright, ubottom );
+ 		quad.Draw ();
+ 
+ 		gfxDevice.Flush ();
+@@ -1180,7 +1275,8 @@ void MOAIDraw::RegisterLuaClass ( MOAILuaState& state ) {
+ 		{ "fillEllipse",			_fillEllipse },
+ 		{ "fillFan",				_fillFan },
+ 		{ "fillRect",				_fillRect },
+-		{ "drawText",				_drawText },
++        { "drawText",               _drawText },
++        { "textSize",               _textSize },
+ 		{ "drawTexture",			_drawTexture },
+ 		{ NULL, NULL }
+ 	};
+diff --git a/src/moai-sim/MOAIDraw.h b/src/moai-sim/MOAIDraw.h
+index 533774b..6f7963b 100644
+--- a/src/moai-sim/MOAIDraw.h
++++ b/src/moai-sim/MOAIDraw.h
+@@ -4,6 +4,8 @@
+ #ifndef	MOAIDRAW_H
+ #define	MOAIDRAW_H
+ 
++#include <cstring>
++
+ class MOAIAnimCurve;
+ class MOAITextureBase;
+ class MOAITexture;
+@@ -38,6 +40,7 @@ private:
+ 	static int				_fillRect			( lua_State* L );
+ 	static int				_drawTexture		( lua_State* L );
+ 	static int				_drawText			( lua_State* L );
++	static int              _textSize           ( lua_State* L );
+ 	
+ 	//----------------------------------------------------------------//
+ 	static void			DrawLuaParams			( lua_State* L, u32 primType );
+@@ -71,12 +74,19 @@ public:
+ 	static void			DrawRectFill			( float left, float top, float right, float bottom, bool asTriStrip = true );
+ 	static void			DrawRectOutline			( const ZLRect& rect );
+ 	static void			DrawRectOutline			( float left, float top, float right, float bottom );
+-	static void			DrawString				( cc8* text, float x, float y, float width, float height );
+-	static void			DrawString				( cc8* text, float x, float y, float scale, MOAIFont& font, float fontSize, float shadowOffsetX, float shadowOffsetY, float width, float height );
+-	static void			DrawTexture				( float left, float top, float right, float bottom, MOAITexture* texture );
++	static USVec2D		DrawString				( cc8* text, size_t textLength, float x, float y, float width, float height );
++	static USVec2D      DrawString              ( cc8* text, float x, float y, float width, float height ) {
++	    return DrawString(text, strlen(text), x, y, width, height);
++
++	}
++	static USVec2D		DrawString				( cc8* text, size_t textLength, float x, float y, float scale, MOAIFont& font, float fontSize, float shadowOffsetX, float shadowOffsetY, float width, float height, float originX = 0, float originY = 0);
++	static USVec2D      DrawString              ( cc8* text, float x, float y, float scale, MOAIFont& font, float fontSize, float shadowOffsetX, float shadowOffsetY, float width, float height) {
++	    return DrawString(text, strlen(text), x, y, scale, font, fontSize, shadowOffsetX, shadowOffsetY, width, height);
++	}
++	static void			DrawTexture				( float left, float top, float right, float bottom, float uleft, float utop, float uright, float ubottom, float r, float g, float b, float alpha, MOAITexture* texture );
+ 	static void			DrawVertexArray			( const ZLVec3D* verts, u32 count, u32 color, u32 primType );
+ 	static void			DrawVertexArray2D		( const float* verts, u32 count, u32 color, u32 primType );
+-	static void			EndDrawString			();
++	static void			EndDrawString			(USVec2D offset = USVec2D(0,0));
+ 						MOAIDraw				();
+ 						~MOAIDraw				();
+ 	void				RegisterLuaClass		( MOAILuaState& state );
