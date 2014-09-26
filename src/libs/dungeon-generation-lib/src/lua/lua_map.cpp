@@ -542,6 +542,15 @@ namespace ldungeon_gen {
 		return LuaStackValue(L, -1);
 	}
 
+    static void __perimeter_apply(LuaStackValue args) {
+        MapPtr map = args["map"].as<MapPtr>();
+        BBox area = luawrap::defaulted(args["area"], BBox(Pos(), map->size()));
+        ConditionalOperator oper = lua_conditional_operator_get(args["operator"]);
+        Selector candidate = lua_selector_get(args["candidate_selector"]);
+        Selector criteria = lua_selector_get(args["inner_selector"]);
+        perimeter_apply(map, area, candidate, criteria, oper);
+    }
+
 	static bool tunnel_apply(LuaStackValue args) {
 		using namespace luawrap;
 		LuaStackValue oper = tunnel_operator(args);
@@ -600,6 +609,7 @@ namespace ldungeon_gen {
 		submodule["tunnel_operator"].bind_function(tunnel_operator);
 		submodule["rectangle_apply"].bind_function(rectangle_apply);
 		submodule["tunnel_apply"].bind_function(tunnel_apply);
+		submodule["perimeter_apply"].bind_function(__perimeter_apply);
 
 		submodule["random_placement_operator"].bind_function(
 				random_placement_operator);
@@ -635,7 +645,9 @@ namespace ldungeon_gen {
 		submodule["FLAG_HAS_OBJECT"] = FLAG_HAS_OBJECT;
 		submodule["FLAG_NEAR_PORTAL"] = FLAG_NEAR_PORTAL;
 		submodule["FLAG_PERIMETER"] = FLAG_PERIMETER;
-		submodule["FLAG_SEETHROUGH"] = FLAG_SEETHROUGH;
+        submodule["FLAG_SEETHROUGH"] = FLAG_SEETHROUGH;
+        submodule["FLAG_RESERVED1"] = FLAG_RESERVED1;
+        submodule["FLAG_RESERVED2"] = FLAG_RESERVED2;
 		submodule["FLAGS_ALL"] = (int)-1;
 		for (int i = 1; i <= 8; i++) {
 			std::string str = format("FLAG_CUSTOM%d", i);

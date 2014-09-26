@@ -54,6 +54,15 @@ local function required_directory(vpath, path)
     if not MOAIFileSystem.checkPathExists(path) then
         return nil
     end
+
+    -- Does a file with the same name as the directory exist within the directory?
+    local vparts = vpath:split("%.")
+    local modfilepath = path .. '/' .. vparts[#vparts]
+    if MOAIFileSystem.checkFileExists(modfilepath .. '.lua') or MOAIFileSystem.checkFileExists(modfilepath .. '.moon') then
+        -- If so, 'require' that file.
+        return require(vpath .. '.' .. vparts[#vparts])
+    end
+
     local object,meta = {},{}
     -- Try to require. Note, only occurs if object[k] == nil.
     function meta:__index(k)

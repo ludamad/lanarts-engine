@@ -24,13 +24,17 @@ static int interpolated_direction(lua_State* L) {
 static void update(FloodFillPaths& paths, double x, double y, int radius) {
     paths.fill_paths_in_radius(Pos(x, y), radius);
 }
+static BBox bounds(FloodFillPaths& paths) {
+    return paths.location();
+}
 
 LuaValue lua_floodfillmetatable(lua_State* L) {
 	LuaValue meta = luameta_new(L, "FloodFillPaths");
 	LuaValue methods = luameta_constants(meta);
 
 	methods["interpolated_direction"].bind_function(interpolated_direction);
-	methods["update"].bind_function(update);
+    methods["update"].bind_function(update);
+    methods["bounds"].bind_function(bounds);
 
 	luameta_gc<FloodFillPaths>(meta);
 

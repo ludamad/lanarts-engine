@@ -90,6 +90,7 @@ namespace ldungeon_gen {
         bool place_random(MapPtr map, group_t parent_group_id, const BBox& rect, Size size);
 	};
 
+	void perimeter_apply(MapPtr map, BBox area, Selector candidate, Selector criteria, ConditionalOperator oper);
 	BBox random_place(BBox area, MTwist& randomizer, Size size);
 }
 

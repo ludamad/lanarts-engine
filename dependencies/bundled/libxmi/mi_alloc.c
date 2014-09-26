@@ -4,6 +4,7 @@
 
 #include "sys-defines.h"
 #include "extern.h"
+#include <assert.h>
 
 #include "xmi.h"
 #include "mi_spans.h"
@@ -26,9 +27,9 @@ mi_xmalloc (size)
   p = (voidptr_t) malloc (size);
   if (p == (voidptr_t)NULL)
     {
-      fprintf (stderr, "libxmi: ");
+      fprintf (stderr, "libxmi: when allocating %d", (int)(size));
       perror ("out of memory");
-      exit (EXIT_FAILURE);
+      assert(0);
     }
   return p;
 }
@@ -50,9 +51,9 @@ mi_xcalloc (nmemb, size)
   p = (voidptr_t) calloc (nmemb, size);
   if (p == (voidptr_t)NULL)
     {
-      fprintf (stderr, "libxmi: ");
+      fprintf (stderr, "libxmi: when allocating %d x %d", (int)(nmemb), (int)(size));
       perror ("out of memory");
-      exit (EXIT_FAILURE);
+      assert(0);
     }
   return p;
 }

@@ -1,10 +1,13 @@
 diff --git a/src/moai-sim/MOAIDraw.cpp b/src/moai-sim/MOAIDraw.cpp
-index 7b0ac75..b51e986 100644
+index 7b0ac75..f051ce8 100644
 --- a/src/moai-sim/MOAIDraw.cpp
 +++ b/src/moai-sim/MOAIDraw.cpp
-@@ -26,6 +26,7 @@
- struct GlyphPlacement {
+@@ -24,8 +24,9 @@
+ */
  
+ struct GlyphPlacement {
+-
++    char chr;
  	MOAIGlyph* glyph;
 +	ZLColorVec color;
  	float x;
@@ -51,7 +54,7 @@ index 7b0ac75..b51e986 100644
  	MOAIGlyph* prevGlyph = 0;
  	
  	// Update the glyph cache
-@@ -105,23 +109,40 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+@@ -105,25 +109,61 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
  	assert ( glyphSet );
  
  	for ( size_t i = 0; i < textLength; i++ ) {
@@ -70,6 +73,12 @@ index 7b0ac75..b51e986 100644
  				break;
  			}
  		}
+-		else {
+-
+-			if ( width > 0 && (cursorX - x) > width ) {
+-				continue;
+-			}
+-
 +		else if (c == 27) {
 +		    // Parse special escape code!
 +		    // Assume next 4 bytes form color
@@ -81,29 +90,49 @@ index 7b0ac75..b51e986 100644
 +		    currentColor.SetRGBA(col);
 +		    i += 4;
 +		}
- 		else {
- 
- 			if ( width > 0 && (cursorX - x) > width ) {
--				continue;
-+	            // Move to the next line
-+	            cursorX = x;
-+	            cursorY += glyphSet->GetHeight () * scale;
-+	            furthestDraw.mY = max(furthestDraw.mY, cursorY);
-+	            prevGlyph = 0;
-+				goto label_redo;
- 			}
- 
++		else if ( width > 0 && (cursorX - x) > width ) {
++            // Move to the next line
++            // Backtrack the current word if necessary:
++            std::vector < GlyphPlacement >& g = g_CurrentTextDrawContext->mGlyphs;
++            int y_disp = glyphSet->GetHeight () * scale;
++            if (!isspace(text[i]) && !g.empty()) {
++                // Messy logic for moving the word follows...
++                int j = g.size() - 1;
++                // Find the start of the word:
++                while (j > 0 && !isspace(g[j-1].chr)) {
++                   j--;
++                }
++                int x_disp = (x - g[j].x);
++                cursorX += x_disp;
++                for (int k = j; k < g.size(); k++) {
++                    g[k].x += x_disp;
++                    g[k].y += y_disp;
++                }
++//	                cursorX = x;
++            } else {
++                cursorX = x;
++            }
++            cursorY += y_disp;
++            furthestDraw.mY = max(furthestDraw.mY, cursorY);
++            prevGlyph = 0;
++            if (!isspace(text[i])) {
++                // Only bother redoing this character if it wasn't a space.
++                goto label_redo;
++            }
++        } else {
  			// Get the glyph for the current character
-@@ -132,7 +153,7 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+ 			MOAIGlyph* glyph = glyphSet->GetGlyph ( c );
+ 			if ( glyph ) {
+@@ -132,7 +172,7 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
  				MOAITextureBase* glyphTexture = font.GetGlyphTexture ( *glyph );
  				if ( glyphTexture ) {
  
 -					GlyphPlacement placement = { glyph, cursorX, cursorY };
-+					GlyphPlacement placement = { glyph, currentColor, cursorX, cursorY };
++					GlyphPlacement placement = { text[i], glyph, currentColor, cursorX, cursorY };
  					g_CurrentTextDrawContext->mGlyphs.push_back( placement );
  				}
  
-@@ -145,24 +166,27 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
+@@ -145,24 +185,27 @@ void MOAIDraw::DrawString ( cc8* text, float x, float y, float width, float heig
  
  				// Move the cursor
  				cursorX += glyph->GetAdvanceX () * scale;
@@ -136,7 +165,7 @@ index 7b0ac75..b51e986 100644
  	// Setup for drawing
  	MOAIGfxDevice& gfxDevice = MOAIGfxDevice::Get ();
  
-@@ -180,7 +204,7 @@ void MOAIDraw::EndDrawString () {
+@@ -180,7 +223,7 @@ void MOAIDraw::EndDrawString () {
  	// Apply render state
  	gfxDevice.SetShaderPreset ( MOAIShaderMgr::FONT_SHADER );
  	gfxDevice.SetVertexMtxMode ( MOAIGfxDevice::VTX_STAGE_WORLD, MOAIGfxDevice::VTX_STAGE_PROJ );
@@ -145,7 +174,7 @@ index 7b0ac75..b51e986 100644
  	MOAIQuadBrush::BindVertexFormat ( gfxDevice );
  
  	// Get the context data
-@@ -201,24 +225,26 @@ void MOAIDraw::EndDrawString () {
+@@ -201,24 +244,26 @@ void MOAIDraw::EndDrawString () {
  
  		numPasses = 2;		
  		gfxDevice.SetPenColor ( 0, 0, 0, 1 );
@@ -178,7 +207,7 @@ index 7b0ac75..b51e986 100644
  			glyph->Draw ( *glyphTexture, glyphPlacement.x + offsetX, glyphPlacement.y + offsetY, scale );
  		}
  	}
-@@ -533,14 +559,26 @@ int MOAIDraw::_fillRect ( lua_State* L ) {
+@@ -533,14 +578,26 @@ int MOAIDraw::_fillRect ( lua_State* L ) {
  int MOAIDraw::_drawTexture ( lua_State* L ) {
  
  	MOAILuaState state ( L );
@@ -212,7 +241,7 @@ index 7b0ac75..b51e986 100644
  	return 0;
  }
  
-@@ -554,8 +592,11 @@ int MOAIDraw::_drawTexture ( lua_State* L ) {
+@@ -554,8 +611,11 @@ int MOAIDraw::_drawTexture ( lua_State* L ) {
  	@in		number x		Left position
  	@in		number y		Top position
  	@in		number scale
@@ -226,7 +255,7 @@ index 7b0ac75..b51e986 100644
  	@out	nil
  */
  int MOAIDraw::_drawText ( lua_State* L ) {
-@@ -563,28 +604,82 @@ int MOAIDraw::_drawText ( lua_State* L ) {
+@@ -563,28 +623,82 @@ int MOAIDraw::_drawText ( lua_State* L ) {
  	MOAILuaState state ( L );
  
  	// TODO	
@@ -322,7 +351,7 @@ index 7b0ac75..b51e986 100644
  //================================================================//
  // MOAIDraw
  //================================================================//
-@@ -1082,7 +1177,7 @@ void MOAIDraw::DrawRectOutline ( float left, float top, float right, float botto
+@@ -1082,7 +1196,7 @@ void MOAIDraw::DrawRectOutline ( float left, float top, float right, float botto
  }
  
  //----------------------------------------------------------------//
@@ -331,7 +360,7 @@ index 7b0ac75..b51e986 100644
  	
  	MOAIGfxDevice& gfxDevice = MOAIGfxDevice::Get ();
  	
-@@ -1090,18 +1185,18 @@ void MOAIDraw::DrawTexture ( float left, float top, float right, float bottom, M
+@@ -1090,18 +1204,18 @@ void MOAIDraw::DrawTexture ( float left, float top, float right, float bottom, M
  		
  		gfxDevice.Flush ();
  
@@ -353,7 +382,7 @@ index 7b0ac75..b51e986 100644
  		quad.Draw ();
  
  		gfxDevice.Flush ();
-@@ -1180,7 +1275,8 @@ void MOAIDraw::RegisterLuaClass ( MOAILuaState& state ) {
+@@ -1180,7 +1294,8 @@ void MOAIDraw::RegisterLuaClass ( MOAILuaState& state ) {
  		{ "fillEllipse",			_fillEllipse },
  		{ "fillFan",				_fillFan },
  		{ "fillRect",				_fillRect },

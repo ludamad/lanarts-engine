@@ -78,6 +78,7 @@ LuaValue lua_mtwistmetatable(lua_State* L) {
 	LuaValue methods = luameta_constants(meta);
 
 	methods["random"].bind_function(random);
+	methods["randomf"].bind_function(randomf);
 	methods["random_round"].bind_function(random_round);
 	methods["guassian"].bind_function(guassian);
 	methods["amount_generated"].bind_function(amount_generated);

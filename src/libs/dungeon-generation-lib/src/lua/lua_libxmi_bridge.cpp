@@ -213,9 +213,25 @@ namespace ldungeon_gen {
 		Pos start = args["from_xy"].as<Pos>();
 		Pos end = args["to_xy"].as<Pos>();
 		miPoint arr[] = { { start.x, start.y }, { end.x, end.y } };
-
 		miDrawLines(ps.set, ps.gc, MI_COORD_MODE_ORIGIN, sizeof(arr)/sizeof(miPoint), arr);
 	}
+
+	// libxmi expects 1/64th degree format; converts radians to this.
+	static double RAD_FACTOR = 57.2957795 * 64;
+	static double rad_to_degree64ths(double rad) {
+	    return rad * RAD_FACTOR;
+	}
+    static void arcf(LuaStackValue args, PaintedSetWrapper& ps) {
+        int x = args["x"].to_int(), y = args["y"].to_int();
+        int w = args["width"].to_int(), h = args["height"].to_int();
+        double ang1 = args["angle1"].to_num(), ang2 = args["angle2"].to_num();
+
+
+        x -= w/2, y -= h/2;
+
+        miArc arc = {x, y, w, h, rad_to_degree64ths(ang1), rad_to_degree64ths(ang2)};
+        miDrawArcs(ps.set, ps.gc, 1, &arc);
+    }
 
 	static void configure(LuaStackValue args, PaintedSetWrapper& ps) {
 		int line_width = luawrap::defaulted(args["line_width"], 1);
@@ -273,9 +289,21 @@ namespace ldungeon_gen {
 		generic_apply(args, linef);
 	}
 
+	static void arc_apply(LuaStackValue args) {
+	    generic_apply(args, arcf);
+	}
+
 	static void polygon_render(LuaStackValue args) {
 		generic_render(args, polygonf);
 	}
+
+    static void arc_query(LuaStackValue args) {
+        generic_query(args, arcf);
+    }
+
+    static void arc_render(LuaStackValue args) {
+        generic_render(args, arcf);
+    }
 
 	static void line_render(LuaStackValue args) {
 		generic_render(args, linef);
@@ -323,11 +351,14 @@ namespace ldungeon_gen {
 		submodule["shape_set_create"].bind_function(shape_set_create);
 		submodule["shape_set_apply"].bind_function(shape_set_apply);
 
-		submodule["polygon_apply"].bind_function(polygon_apply);
+        submodule["polygon_apply"].bind_function(polygon_apply);
 		submodule["polygon_render"].bind_function(polygon_render);
 		submodule["polygon_query"].bind_function(polygon_query);
 		submodule["line_apply"].bind_function(line_apply);
 		submodule["line_render"].bind_function(line_render);
 		submodule["line_query"].bind_function(line_query);
+		submodule["arc_apply"].bind_function(arc_apply);
+		submodule["arc_render"].bind_function(arc_render);
+		submodule["arc_query"].bind_function(arc_query);
 	}
 }
