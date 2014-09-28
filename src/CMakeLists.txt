@@ -50,7 +50,7 @@ target_link_libraries(lanarts-libs
     luayaml
     RVO
     lpeg
-    luv
+    #luv
     SDL2-static
     lualinenoise
 )

@@ -95,7 +95,7 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 	lua_extend(L, luayaml_module, "yaml");
 	lua_extend(L, luaopen_lpeg, "lpeg");
 	lua_extend(L, luaopen_linenoise, "linenoise");
-	lua_extend(L, luaopen_luv, "luv");
+//	lua_extend(L, luaopen_luv, "luv");
     lua_extend(L, luaopen_enet, "enet");
     lua_extend(L, luaopen_SDL, "sdl");
     lua_extend(L, luaopen_ldraw, "lanarts.draw");
