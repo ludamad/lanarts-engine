@@ -7,6 +7,7 @@
 #include "Timer.h"
 
 #include <cstdlib>
+#include <SDL.h>
 
 #ifdef __unix__
 #include <sys/time.h>
