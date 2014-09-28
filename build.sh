@@ -54,7 +54,13 @@ fi
 
 USE_LUAJIT=TRUE
 BUILD_TYPE=Debug
-BUILD_LINUX=TRUE
+if [ "$(uname)" == "Darwin" ]; then
+    BUILD_LINUX=FALSE
+    BUILD_OSX=TRUE
+else
+    BUILD_LINUX=TRUE
+    BUILD_OSX=FALSE
+fi
 BUILD_WINDOWS=FALSE
 CMAKE_COMMAND=cmake
 MAKE_COMMAND=make
@@ -70,6 +76,7 @@ if handle_flag "--mingw32" || handle_flag "-M" ; then
     MAKE_COMMAND=mingw32-make
     BUILD_FOLDER="$BUILD_ROOT/mingw32"
     BUILD_LINUX=FALSE
+    BUILD_OSX=FALSE
     BUILD_WINDOWS=TRUE
     EXE_NAME="moai.exe"
 fi
@@ -93,6 +100,7 @@ function run_cmake() {
     echo "Configuring build via CMake..." | colorify $LIGHT_BLUE
     "$CMAKE_COMMAND" \
         -DBUILD_LINUX=$BUILD_LINUX \
+        -DBUILD_OSX=$BUILD_OSX \
         -DBUILD_WINDOWS=$BUILD_WINDOWS \
         -DSDL_HOST=TRUE \
         -DMOAI_BOX2D=FALSE \
@@ -106,7 +114,7 @@ function run_cmake() {
         -DMOAI_MONGOOSE=TRUE \
         -DMOAI_LUAEXT=TRUE \
         -DMOAI_OGG=TRUE \
-        -DMOAI_OPENSSL=TRUE \
+        -DMOAI_OPENSSL=FALSE \
         -DMOAI_SQLITE3=TRUE \
         -DMOAI_TINYXML=TRUE \
         -DMOAI_PNG=TRUE \
