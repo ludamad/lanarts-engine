@@ -98,7 +98,6 @@ void LanartsMOAILuaExtHook(lua_State* L) {
 //	lua_extend(L, luaopen_luv, "luv");
     lua_extend(L, luaopen_enet, "enet");
     lua_extend(L, luaopen_SDL, "sdl");
-    lua_extend(L, luaopen_ldraw, "lanarts.draw");
     lua_extend(L, luaopen_SerializeBuffer, "DataBuffer");
 
 //	lua_extend(L, luaopen_b2_vendor, "box2d");
