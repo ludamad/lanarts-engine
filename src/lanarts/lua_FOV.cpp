@@ -9,7 +9,7 @@
 using namespace ldungeon_gen;
 using namespace luawrap;
 
-static void calculate(MapPtr& map, fov& fov, int ptx, int pty) {
+static void calculate(fov& fov, MapPtr& map, int ptx, int pty) {
     return fov.calculate(map, ptx, pty);
 }
 static bool within_fov(fov& fov, int grid_x, int grid_y) {
