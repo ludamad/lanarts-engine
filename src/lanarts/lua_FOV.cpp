@@ -15,6 +15,9 @@ static void calculate(fov& fov, MapPtr& map, int ptx, int pty) {
 static bool within_fov(fov& fov, int grid_x, int grid_y) {
     return fov.within_fov(grid_x - 1, grid_y - 1);
 }
+static void resize(fov& fov, int radius) {
+    return fov.resize(radius);
+}
 
 static bool fov_rectangle_visible(fov& fov, BBox rect) {
     int w = rect.width(), h = rect.height();
@@ -46,6 +49,7 @@ LuaValue lua_fov(lua_State* L) {
 	LuaValue methods = luameta_constants(meta);
 
 	methods["calculate"].bind_function(calculate);
+	methods["resize"].bind_function(resize);
 	methods["within_fov"].bind_function(within_fov);
 	methods["tiles_covered"].bind_function(tiles_covered);
 	methods["circle_visible"].bind_function(fov_circle_visible);

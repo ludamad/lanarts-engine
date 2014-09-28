@@ -3,6 +3,7 @@
  *  Represents a field of view
  */
 
+#include <new>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -17,9 +18,18 @@ using namespace std;
 fov::fov(int radius) :
 		radius(radius), m(radius, radius, radius, radius), ptx(0), pty(
 				0), sx(0), sy(0) {
-	diameter = radius * 2 + 1;
-	has_been_calculated = false;
-	sight_mask = new char[diameter * diameter];
+    sight_mask = NULL;
+    resize(radius);
+}
+
+void fov::resize(int radius) {
+    this->radius = radius;
+    m.~maskT();
+    new (&m) permissive::maskT(radius, radius, radius, radius);
+    delete[] sight_mask;
+    diameter = radius * 2 + 1;
+    has_been_calculated = false;
+    sight_mask = new char[diameter * diameter];
     float radius_squared = (radius-.5) * (radius-.5);
 
     for (int y = -radius; y <= radius; y++) {
