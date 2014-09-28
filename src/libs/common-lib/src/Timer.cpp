@@ -49,7 +49,9 @@ Timer::Timer() {
 	start();
 }
 
+extern "C" {
 unsigned int SDL_GetTicks(void);
+}
 
 void Timer::start() {
 #if defined(__unix__) || defined(_WIN32)
