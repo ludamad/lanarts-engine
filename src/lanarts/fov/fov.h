@@ -15,9 +15,9 @@
 
 class fov {
 public:
-	fov(const ldungeon_gen::MapPtr& map, int radius);
+	fov(int radius);
 	~fov();
-	void calculate(int ptx, int pty);
+	void calculate(const ldungeon_gen::MapPtr& map, int ptx, int pty);
 	bool within_fov(int grid_x, int grid_y);
 	bool within_fov(const BBox& bbox);
 	void matches(int sqr_x, int sqr_y, char* sub_sqrs);

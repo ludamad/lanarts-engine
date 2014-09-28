@@ -9,8 +9,8 @@
 using namespace ldungeon_gen;
 using namespace luawrap;
 
-static void calculate(fov& fov, int ptx, int pty) {
-    return fov.calculate(ptx, pty);
+static void calculate(MapPtr& map, fov& fov, int ptx, int pty) {
+    return fov.calculate(map, ptx, pty);
 }
 static bool within_fov(fov& fov, int grid_x, int grid_y) {
     return fov.within_fov(grid_x - 1, grid_y - 1);
@@ -58,9 +58,8 @@ LuaValue lua_fov(lua_State* L) {
 
 static int new_fvo(lua_State* L) {
     void* valptr = luameta_newuserdata(L, lua_fov, sizeof(fov));
-    MapPtr map = get<MapPtr>(L, 1);
-    int radius = get<int>(L, 2);
-    new (valptr) fov(map, radius);
+    int radius = get<int>(L, 1);
+    new (valptr) fov(radius);
     return 1;
 }
 

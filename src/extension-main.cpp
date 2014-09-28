@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include <lua.hpp>
 
 #include "lanarts/opengl/gl_extensions.h"
@@ -30,7 +30,7 @@ extern "C" {
 #include <luajit.h>
 }
 
-// For luajit GDB helpers:
+// For luajit GDB helpers, and the shutdown hook:
 lua_State* globalL = NULL;
 std::string _luatrace() {
     luawrap::globals(globalL)["debug"]["traceback"].push();
@@ -64,6 +64,23 @@ static void lua_extend(lua_State* L, lua_CFunction func, const char* module_name
 
 void lua_lanarts_core_bindings(lua_State* L);
 
+void LanartsShutdownHook() {
+    lua_State* L = globalL;
+    luawrap::globals(L)["__lanarts_shutdown_hook"].push();
+    if (!lua_isnil(L, -1)) {
+        lua_call(L, 0, 0);
+    }
+}
+
+static bool __HOOK_INITED = false;
+void SetLanartsShutdownHook(LuaValue hook) {
+    luawrap::globals(hook.luastate())["__lanarts_shutdown_hook"] = hook;
+    if (!__HOOK_INITED) {
+        atexit(LanartsShutdownHook);
+        __HOOK_INITED = true;
+    }
+}
+
 void LanartsMOAILuaExtHook(lua_State* L) {
     globalL = L;
 
@@ -73,6 +90,7 @@ void LanartsMOAILuaExtHook(lua_State* L) {
     // OpenGL configuration bindings
     luawrap::globals(L)["gl_set_vsync"].bind_function(gl_set_vsync);
     luawrap::globals(L)["string"]["pack"].bind_function(str_pack);
+    luawrap::globals(L)["SetLanartsShutdownHook"].bind_function(SetLanartsShutdownHook);
 
 	lua_extend(L, luayaml_module, "yaml");
 	lua_extend(L, luaopen_lpeg, "lpeg");

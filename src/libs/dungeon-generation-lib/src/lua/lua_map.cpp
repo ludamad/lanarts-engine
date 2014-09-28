@@ -192,6 +192,11 @@ namespace ldungeon_gen {
 		return 1;
 	}
 
+    static int lua_map_clear(lua_State* L) {
+        MapPtr map = luawrap::get<MapPtr>(L, 1);
+        map->clear();
+        return 0;
+    }
 	LuaValue lua_mapmetatable(lua_State* L) {
 		LUAWRAP_SET_TYPE(MapPtr&);
 
@@ -209,6 +214,8 @@ namespace ldungeon_gen {
 		lua_pop(L, 1);
 
 		getters["groups"].bind_function(lua_map_group_list);
+
+		methods["clear"].bind_function(lua_map_clear);
 
 		LUAWRAP_GETTER(getters, size, OBJ->size());
 		LUAWRAP_METHOD(methods, get, lua_square_push(L, (*OBJ)[luawrap::get<Pos>(L, 2) - Pos(1,1)]));

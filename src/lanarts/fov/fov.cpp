@@ -14,8 +14,8 @@
 
 using namespace std;
 
-fov::fov(const ldungeon_gen::MapPtr& map, int radius) :
-		map(map), radius(radius), m(radius, radius, radius, radius), ptx(0), pty(
+fov::fov(int radius) :
+		radius(radius), m(radius, radius, radius, radius), ptx(0), pty(
 				0), sx(0), sy(0) {
 	diameter = radius * 2 + 1;
 	has_been_calculated = false;
@@ -34,8 +34,9 @@ fov::fov(const ldungeon_gen::MapPtr& map, int radius) :
     }
 }
 
-void fov::calculate(int ptx, int pty) {
+void fov::calculate(const ldungeon_gen::MapPtr& map, int ptx, int pty) {
 	perf_timer_begin(FUNCNAME);
+	this->map = map;
 
 	this->has_been_calculated = true;
 	this->ptx = ptx, this->pty = pty;

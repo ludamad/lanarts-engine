@@ -87,6 +87,11 @@ static void step(RVOSimulator& sim) {
     sim.doStep();
 }
 
+static void clear(RVOSimulator& sim) {
+    sim.~RVOSimulator();
+    new (&sim) RVOSimulator();
+}
+
 LuaValue lua_rvoworldmetatable(lua_State* L) {
 	LuaValue meta = luameta_new(L, "RVOWorld");
 	LuaValue methods = luameta_constants(meta);
@@ -102,6 +107,7 @@ LuaValue lua_rvoworldmetatable(lua_State* L) {
 	methods["set_preferred_velocity"].bind_function(set_preferred_velocity);
 	methods["change_instance_id"].bind_function(change_instance_id);
 	methods["step"].bind_function(step);
+	methods["clear"].bind_function(clear);
 
 	luameta_gc<RVOSimulator>(meta);
 
