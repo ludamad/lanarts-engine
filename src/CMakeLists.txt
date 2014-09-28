@@ -44,7 +44,7 @@ target_link_libraries(lanarts-libs
 #    lua_box2d
     lanarts_dungeon_gen
     lcommon
-    ldraw
+    #ldraw
     luawrap
     libxmi
     luayaml
