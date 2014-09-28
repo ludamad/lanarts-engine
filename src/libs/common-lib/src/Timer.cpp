@@ -7,7 +7,6 @@
 #include "Timer.h"
 
 #include <cstdlib>
-#include <SDL.h>
 
 #ifdef __unix__
 #include <sys/time.h>
@@ -49,6 +48,8 @@ int gettimeofday(struct timeval *tv, void* notused) {
 Timer::Timer() {
 	start();
 }
+
+unsigned int SDL_GetTicks(void);
 
 void Timer::start() {
 #if defined(__unix__) || defined(_WIN32)
