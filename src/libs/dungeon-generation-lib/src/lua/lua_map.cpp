@@ -13,6 +13,7 @@
 #include "map_fill.h"
 #include "tunnelgen.h"
 #include "map_check.h"
+#include "map_misc_ops.h"
 
 #include "lua_ldungeon_impl.h"
 
@@ -501,6 +502,20 @@ namespace ldungeon_gen {
 		return area_oper;
 	}
 
+
+    static void lerode_diagonal_pairs(LuaStackValue args) {
+        using namespace luawrap;
+        lua_State* L = args.luastate();
+
+        MapPtr map = args["map"].as<MapPtr>();
+        //Get RNG setup for map generation
+        MTwist* mtwist = args["rng"].as<MTwist*>();
+
+        Selector selector = lua_selector_get(args["selector"]);
+        BBox area = luawrap::defaulted(args["area"], BBox(Pos(), map->size()));
+        erode_diagonal_pairs(*map, *mtwist, area, selector);
+    }
+
 	static LuaStackValue tunnel_operator(LuaStackValue args) {
 		using namespace luawrap;
 		lua_State* L = args.luastate();
@@ -629,6 +644,7 @@ namespace ldungeon_gen {
 		submodule["find_random_square"].bind_function(lfind_random_square);
         submodule["get_row_flags"].bind_function(lget_row_flags);
         submodule["get_row_content"].bind_function(lget_row_content);
+        submodule["erode_diagonal_pairs"].bind_function(lerode_diagonal_pairs);
 
 		LUAWRAP_SET_TYPE(LuaStackValue);
 		LUAWRAP_GETTER(submodule, random_place,

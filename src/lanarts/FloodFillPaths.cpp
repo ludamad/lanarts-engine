@@ -62,12 +62,12 @@ static void floodfill(Grid<FloodFillNode>& path, Size size, int sx, int sy) {
 	delete[] heap;
 }
 
-FloodFillPaths::FloodFillPaths(const ldungeon_gen::MapPtr& map) {
-	initialize(map);
+FloodFillPaths::FloodFillPaths() {
 }
 
-void FloodFillPaths::initialize(const ldungeon_gen::MapPtr& map) {
+void FloodFillPaths::set_map(const ldungeon_gen::MapPtr& map, BoolGridRef sight_map) {
 	_map = map;
+	_sight_map = sight_map;
 }
 
 FloodFillPaths::~FloodFillPaths() {
@@ -89,7 +89,11 @@ void FloodFillPaths::fill_paths_tile_region(const Pos& tile_xy,
 		for (int y = 0; y < _size.h; y++) {
 			for (int x = 0; x < _size.w; x++) {
 				FloodFillNode* node = get(x, y);
-				node->solid = (*_map)[Pos(x + area.x1, y + area.y1)].matches_flags(ldungeon_gen::FLAG_SOLID);
+				Pos map_xy = Pos(x + area.x1, y + area.y1);
+				node->solid = (*_map)[map_xy].matches_flags(ldungeon_gen::FLAG_SOLID);
+				if (!_sight_map.empty() && !(*_sight_map)[map_xy]) {
+				    node->solid = false;
+				}
 				node->open = true;
 				node->dx = 0;
 				node->dy = 0;

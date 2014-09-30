@@ -5,6 +5,7 @@
 
 #include <ldungeon_gen/Map.h>
 
+#include "BoolGridRef.h"
 #include "FloodFillPaths.h"
 
 using namespace luawrap;
@@ -24,6 +25,18 @@ static int interpolated_direction(lua_State* L) {
 static void update(FloodFillPaths& paths, double x, double y, int radius) {
     paths.fill_paths_in_radius(Pos(x, y), radius);
 }
+
+static int set_map(lua_State* L) {
+    FloodFillPaths& paths = *get<FloodFillPaths*>(L, 1);
+    ldungeon_gen::MapPtr map = get<ldungeon_gen::MapPtr>(L, 2);
+    BoolGridRef sight_map;
+    if (lua_gettop(L) >= 3) {
+        sight_map = *get<BoolGridRef*>(L, 3);
+    }
+    paths.set_map(map, sight_map);
+    return 0;
+}
+
 static BBox bounds(FloodFillPaths& paths) {
     return paths.location();
 }
@@ -34,6 +47,7 @@ LuaValue lua_floodfillmetatable(lua_State* L) {
 
 	methods["interpolated_direction"].bind_function(interpolated_direction);
     methods["update"].bind_function(update);
+    methods["set_map"].bind_function(set_map);
     methods["bounds"].bind_function(bounds);
 
 	luameta_gc<FloodFillPaths>(meta);
@@ -41,8 +55,8 @@ LuaValue lua_floodfillmetatable(lua_State* L) {
 	return meta;
 }
 
-static FloodFillPaths new_floodfill(const ldungeon_gen::MapPtr& map) {
-	return FloodFillPaths(map);
+static FloodFillPaths new_floodfill() {
+	return FloodFillPaths();
 }
 
 int luaopen_FloodFillPaths(lua_State *L) {

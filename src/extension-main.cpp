@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <lua.hpp>
 
+#include <SDL.h>
+
 #include "lanarts/opengl/gl_extensions.h"
 #include <luawrap/luawrap.h>
 #include <lcommon/strformat.h>
@@ -81,6 +83,17 @@ void SetLanartsShutdownHook(LuaValue hook) {
     }
 }
 
+extern bool __moai_use_fullscreen;
+
+void SetLanartsOpenWindowFullscreenMode(bool fullscreen) {
+    __moai_use_fullscreen = fullscreen;
+}
+
+void SetLanartsShowCursor(bool shown) {
+    printf("Cursor state set to %d\n", int(shown));
+    SDL_ShowCursor(shown ? SDL_ENABLE : SDL_DISABLE);
+}
+
 void LanartsMOAILuaExtHook(lua_State* L) {
     globalL = L;
 
@@ -91,6 +104,8 @@ void LanartsMOAILuaExtHook(lua_State* L) {
     luawrap::globals(L)["gl_set_vsync"].bind_function(gl_set_vsync);
     luawrap::globals(L)["string"]["pack"].bind_function(str_pack);
     luawrap::globals(L)["SetLanartsShutdownHook"].bind_function(SetLanartsShutdownHook);
+    luawrap::globals(L)["SetLanartsOpenWindowFullscreenMode"].bind_function(SetLanartsOpenWindowFullscreenMode);
+    luawrap::globals(L)["SetLanartsShowCursor"].bind_function(SetLanartsShowCursor);
 
 	lua_extend(L, luayaml_module, "yaml");
 	lua_extend(L, luaopen_lpeg, "lpeg");

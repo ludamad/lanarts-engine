@@ -12,6 +12,8 @@
 #include <lcommon/Grid.h>
 #include <ldungeon_gen/Map.h>
 
+#include "BoolGridRef.h"
+
 #include "common.h"
 
 struct FloodFillCoord {
@@ -46,9 +48,9 @@ struct FloodFillNode {
 
 class FloodFillPaths {
 public:
-	FloodFillPaths(const ldungeon_gen::MapPtr& map);
+	FloodFillPaths();
 	~FloodFillPaths();
-	void initialize(const ldungeon_gen::MapPtr& map);
+	void set_map(const ldungeon_gen::MapPtr& map, BoolGridRef sight_map);
 
 	void fill_paths_in_radius(const Pos& source_xy, int radius);
 
@@ -96,6 +98,7 @@ private:
 	bool can_head(const BBox& bbox, int speed, int dx, int dy);
 
 	ldungeon_gen::MapPtr _map;
+	BoolGridRef _sight_map;
 	Grid<FloodFillNode> _path;
 	/* The top left point covered by the flood fill */
 	Pos _topleft_xy;

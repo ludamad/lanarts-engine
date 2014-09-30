@@ -1,0 +1,23 @@
+diff --git a/src/host-sdl/SDLHost.cpp b/src/host-sdl/SDLHost.cpp
+index 05561fe..4cb8607 100644
+--- a/src/host-sdl/SDLHost.cpp
++++ b/src/host-sdl/SDLHost.cpp
+@@ -54,11 +54,16 @@ void _AKUExitFullscreenModeFunc () {
+ 	printf ( "UNSUPPORTED\n" );
+ }
+ 
++// Extension for Lanarts, support fullscreen
++bool __moai_use_fullscreen = false;
+ //----------------------------------------------------------------//
+ void _AKUOpenWindowFunc ( const char* title, int width, int height ) {
+-	
+ 	if ( !sWindow ) {
+-		sWindow = SDL_CreateWindow ( title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN );
++        if (__moai_use_fullscreen) {
++            sWindow = SDL_CreateWindow ( title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_FULLSCREEN);
++        } else {
++            sWindow = SDL_CreateWindow ( title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN );
++        }
+ 		SDL_GL_CreateContext ( sWindow );
+ 		SDL_GL_SetSwapInterval ( 1 );
+ 		AKUDetectGfxContext ();

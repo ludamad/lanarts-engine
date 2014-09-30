@@ -114,7 +114,7 @@ function run_cmake() {
         -DMOAI_MONGOOSE=TRUE \
         -DMOAI_LUAEXT=TRUE \
         -DMOAI_OGG=TRUE \
-        -DMOAI_OPENSSL=FALSE \
+        -DMOAI_OPENSSL=TRUE \
         -DMOAI_SQLITE3=TRUE \
         -DMOAI_TINYXML=TRUE \
         -DMOAI_PNG=TRUE \
