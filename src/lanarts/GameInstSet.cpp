@@ -99,9 +99,9 @@ void GameInstSet::reallocate_internal_data() {
         update_instancelist_for_reallocate_(unit_grid[i]);
     }
 }
-static int get_xyind(const Pos& c, int grid_w) {
-    return (c.y / GameInstSet::REGION_SIZE) * grid_w
-            + c.x / GameInstSet::REGION_SIZE;
+static int get_xyind(const PosF& c, int grid_w) {
+    return (lrint(c.y) / GameInstSet::REGION_SIZE) * grid_w
+            + lrint(c.x) / GameInstSet::REGION_SIZE;
 }
 
 void GameInstSet::__remove_instance(InstanceState* state) {
@@ -179,7 +179,7 @@ void GameInstSet::deserialize(SerializeBuffer& serializer) {
 //	}
 }
 
-bool GameInstSet::within_bounds_check(const Pos& c) {
+bool GameInstSet::within_bounds_check(const PosF& c) {
     return !(c.x < 0 || c.y < 0 || c.x >= grid_w * REGION_SIZE
             || c.y >= grid_h * REGION_SIZE);
 }
@@ -189,7 +189,7 @@ obj_id GameInstSet::add_instance(double x, double y, double radius,
     if (tset_should_resize(unit_amnt, unit_capacity))
         this->reallocate_internal_data();
 
-    Pos c(x, y);
+    PosF c(x, y);
 
     //Will be set to the current state object in 'add'
     InstanceState* state = &unit_set[0];
@@ -288,19 +288,15 @@ void GameInstSet::copy_to(GameInstSet& inst_set) {
 }
 
 int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap,
-        int x, int y, int radius) {
-    int rad = radius == -1 ? obj->target_radius : radius;
+        double x, double y, double radius) {
+    double rad = radius == -1 ? obj->target_radius : radius;
     x = x == -1 ? obj->x : x;
     y = y == -1 ? obj->y : y;
 
-    int mingrid_x = (x - rad) / REGION_SIZE, mingrid_y = (y - rad)
-            / REGION_SIZE;
-    int maxgrid_x = (x + rad) / REGION_SIZE, maxgrid_y = (y + rad)
-            / REGION_SIZE;
-    int minx = squish(mingrid_x, 0, grid_w), miny = squish(mingrid_y, 0,
-            grid_h);
-    int maxx = squish(maxgrid_x, 0, grid_w), maxy = squish(maxgrid_y, 0,
-            grid_h);
+    // Find the region we are situated in:
+    int cx = lrint(x) / REGION_SIZE, cy = lrint(y) / REGION_SIZE;
+    int minx = squish(cx - 1, 0, grid_w), miny = squish(cy - 1, 0, grid_h);
+    int maxx = squish(cx + 1, 0, grid_w-1), maxy = squish(cy + 1, 0, grid_h-1);
 
     int obj_n = 0;
 
@@ -313,10 +309,10 @@ int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap,
             while (ptr != NULL) {
                 GameInst& inst = ptr->inst;
                 if (obj == NULL || obj->id != inst.id) {
-                    int radsqr = (inst.target_radius + rad)
+                    double radsqr = (inst.target_radius + rad)
                             * (inst.target_radius + rad);
-                    int dx = inst.x - x, dy = inst.y - y;
-                    int dsqr = dx * dx + dy * dy;
+                    double dx = inst.x - x, dy = inst.y - y;
+                    double dsqr = dx * dx + dy * dy;
                     //want to test sqrt(dsqr) < orad+rad
                     //therefore we test dsqr < (orad+rad)*(orad+rad)
                     if (dsqr < radsqr && inst.solid) {
@@ -329,6 +325,7 @@ int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap,
                     }
                 }
                 if (ptr == eptr) {
+                    LANARTS_ASSERT(ptr->next_in_grid == NULL);
                     break;
                 }
                 ptr = ptr->next_in_grid;
@@ -381,7 +378,7 @@ void GameInstSet::clear() {
 //TODO: Make collisionlist entry positions deterministic -or- make collision functions always return the same object
 //this will be important when copying over state updates in client side prediction
 void GameInstSet::__update_collision_position(InstanceState* state,
-        const Pos& p1, const Pos& p2) {
+        const PosF& p1, const PosF& p2) {
     GameInst& inst = state->inst;
 
     int old_bucket = get_xyind(p1, grid_w), new_bucket = get_xyind(p2, grid_w);

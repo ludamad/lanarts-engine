@@ -65,9 +65,9 @@ public:
 	GameInst* get_instance(obj_id id) const;
 
 	int object_radius_test(GameInst* obj, GameInst* objs = NULL,
-	        int obj_cap = 0, int x = -1, int y = -1, int radius = -1);
+	        int obj_cap = 0, double x = -1, double y = -1, double radius = -1);
 
-	obj_id object_radius_test(obj_id id, int x = -1, int y = -1, int radius = -1) {
+	obj_id object_radius_test(obj_id id, double x = -1, double y = -1, double radius = -1) {
 	    GameInst result[1];
 	    int amount = object_radius_test(get_instance(id), result, 1, x, y, radius);
 	    if (amount == 0) {
@@ -140,7 +140,7 @@ private:
 
 	// Internal structure upkeep functions
 	void __remove_instance(InstanceState* state);
-	void __update_collision_position(InstanceState* state, const Pos& p1, const Pos& p2);
+	void __update_collision_position(InstanceState* state, const PosF& p1, const PosF& p2);
 	void reallocate_internal_data();
 	void update_statepointer_for_reallocate_(InstanceState** stateptr);
 
@@ -152,7 +152,7 @@ private:
 			InstanceLinkedList& list);
 
 	/* Integrity check */
-	bool within_bounds_check(const Pos& c);
+	bool within_bounds_check(const PosF& c);
 
 	//Used to allow access to internal data/functions for our hash set implementation utility class
 	friend class GameInstSetFunctions;
