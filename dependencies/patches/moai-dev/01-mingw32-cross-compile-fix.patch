@@ -1,61 +1,3 @@
-diff --git a/3rdparty/mongoose/mongoose.c b/3rdparty/mongoose/mongoose.c
-index d706946..ae5985f 100644
---- a/3rdparty/mongoose/mongoose.c
-+++ b/3rdparty/mongoose/mongoose.c
-@@ -199,7 +199,7 @@ struct pollfd {
- 
- // Mark required libraries
- #ifdef _MSC_VER
--#pragma comment(lib, "Ws2_32.lib")
-+#pragma comment(lib, "ws2_32.lib")
- #endif
- 
- #else    // UNIX  specific
-diff --git a/3rdparty/untz/src/UntzSound.cpp b/3rdparty/untz/src/UntzSound.cpp
-index a2e9fdc..c50b5b8 100644
---- a/3rdparty/untz/src/UntzSound.cpp
-+++ b/3rdparty/untz/src/UntzSound.cpp
-@@ -17,7 +17,7 @@
-    #include "OggAudioSource.h"
- #endif
- #if defined(WIN32)
--	#include <Native/Win/DShowAudioSource.h>
-+	#include <native/win/DShowAudioSource.h>
- #else
- 	#if defined(__APPLE__)
- 		#include "ExtAudioFileAudioSource.h"
-@@ -178,6 +178,11 @@ bool Sound::decode(const RString& path, SoundInfo& info, float** data)
- 		source = as;
- 		if(as->init(path, true))
- 			decoded = true;
-+#elif defined(WIN32)
-+		DShowAudioSource* as = new DShowAudioSource();
-+		source = as;
-+		if(as->init(path, true))
-+			decoded = true;
- #elif defined(__ANDROID__) | defined(__linux__) | defined(__OPENAL__) | defined(__SDL__) | defined ( __QNX__ )
-       WaveFileAudioSource *as = new WaveFileAudioSource();
- 		source = as;
-diff --git a/3rdparty/untz/src/native/win/DShowAudioSource.h b/3rdparty/untz/src/native/win/DShowAudioSource.h
-index 40ebd41..76dd6b2 100644
---- a/3rdparty/untz/src/native/win/DShowAudioSource.h
-+++ b/3rdparty/untz/src/native/win/DShowAudioSource.h
-@@ -11,7 +11,7 @@
- 
- #include "Untz.h"
- #include "AudioSource.h"
--#include <Threading/Threading.h>
-+#include <threading/Threading.h>
- #include <tchar.h>
- #include <dshow.h>
- //qedit breaks mingw builds, use mingw's qedit.
-@@ -85,4 +85,4 @@ private:
- 	double length;
- };
- 
--#endif
-\ No newline at end of file
-+#endif
 diff --git a/cmake/third-party/luaext/luasocket/CMakeLists.txt b/cmake/third-party/luaext/luasocket/CMakeLists.txt
 index 748d49c..0b90829 100644
 --- a/cmake/third-party/luaext/luasocket/CMakeLists.txt
@@ -68,10 +10,18 @@ index 748d49c..0b90829 100644
 +     target_link_libraries( luasocket ws2_32 )
     endif (BUILD_WINDOWS)
 diff --git a/cmake/third-party/luajit/CMakeLists.txt b/cmake/third-party/luajit/CMakeLists.txt
-index 9e364df..5ff668d 100644
+index 9e364df..3f4a687 100644
 --- a/cmake/third-party/luajit/CMakeLists.txt
 +++ b/cmake/third-party/luajit/CMakeLists.txt
-@@ -28,6 +28,7 @@ cmake_minimum_required(VERSION 2.8)
+@@ -22,12 +22,13 @@ cmake_minimum_required(VERSION 2.8)
+     set (luajit_buildoptions BUILDMODE=static)
+     set (luajit_copt "")
+     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+-        set (luajit_buildoptions ${luajit_buildoptions} CCDEBUG=${CC_DEBUG_OPT})
+-        set (luajit_copt ${luajit_copt} -O1)
++        #set (luajit_buildoptions ${luajit_buildoptions} CCDEBUG=-ggdb)
++        set (luajit_copt ${luajit_copt} -g)
+         set (luajit_buildoptions ${luajit_buildoptions} XCFLAGS="-DLUA_USE_APICHECK -DLUA_USE_ASSERT")
      else ()
          set (luajit_copt ${luajit_copt} -O2)
      endif()
@@ -117,75 +67,3 @@ index 9e364df..5ff668d 100644
 -    
 \ No newline at end of file
 +    
-diff --git a/src/host-glut/GlutHostMain.cpp b/src/host-glut/GlutHostMain.cpp
-index 6a012ce..10e04ef 100644
---- a/src/host-glut/GlutHostMain.cpp
-+++ b/src/host-glut/GlutHostMain.cpp
-@@ -13,7 +13,7 @@
- #endif
- 
- #ifdef _WIN32
--	#include <Windows.h>
-+	#include <windows.h>
- #endif
- 
- //----------------------------------------------------------------//
-@@ -39,4 +39,4 @@
- int main ( int argc, char** argv ) {
- 
- 	return GlutHost ( argc, argv );
--}
-\ No newline at end of file
-+}
-diff --git a/src/host-sdl/SDLHostMain.cpp b/src/host-sdl/SDLHostMain.cpp
-index f2a8c9a..11fe2cd 100644
---- a/src/host-sdl/SDLHostMain.cpp
-+++ b/src/host-sdl/SDLHostMain.cpp
-@@ -13,7 +13,7 @@
- #endif
- 
- #ifdef _WIN32
--	#include <Windows.h>
-+	#include <windows.h>
- #endif
- 
- //----------------------------------------------------------------//
-diff --git a/src/moai-sim/MOAIProfilerReportBox.cpp b/src/moai-sim/MOAIProfilerReportBox.cpp
-index 6955f4c..efebf73 100644
---- a/src/moai-sim/MOAIProfilerReportBox.cpp
-+++ b/src/moai-sim/MOAIProfilerReportBox.cpp
-@@ -10,7 +10,7 @@
- 
- #if defined ( MOAI_OS_WINDOWS )
- 	#include <windows.h>
--	#include <Psapi.h>
-+	#include <psapi.h>
- #endif
- 
- #if defined ( MOAI_OS_IPHONE )
-diff --git a/src/moai-sim/MOAISim.cpp b/src/moai-sim/MOAISim.cpp
-index 7e2ede2..b88a3b5 100644
---- a/src/moai-sim/MOAISim.cpp
-+++ b/src/moai-sim/MOAISim.cpp
-@@ -22,7 +22,7 @@
- 
- #if defined(_WIN32)
- 	#include <windows.h>
--	#include <Psapi.h>
-+	#include <psapi.h>
- #elif defined(__APPLE__) //&& defined(TARGET_IPHONE_SIMULATOR)
- 	// Not sure if using mach API is disallowed in the app store. :/
- 	#include <mach/mach.h>
-diff --git a/src/zl-gfx/zl_gfx_opengl.cpp b/src/zl-gfx/zl_gfx_opengl.cpp
-index 7b6ba35..95ae281 100644
---- a/src/zl-gfx/zl_gfx_opengl.cpp
-+++ b/src/zl-gfx/zl_gfx_opengl.cpp
-@@ -12,7 +12,7 @@ using namespace std;
- 
- #ifdef MOAI_OS_WINDOWS
- 	#define GLEW_STATIC
--	#include <gl/glew.h>
-+	#include <GL/glew.h>
- #endif
- 
- #ifdef MOAI_OS_OSX
