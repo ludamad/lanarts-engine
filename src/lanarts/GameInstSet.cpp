@@ -289,9 +289,9 @@ void GameInstSet::copy_to(GameInstSet& inst_set) {
 
 int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap,
         double x, double y, double radius) {
-    double rad = radius == -1 ? obj->target_radius : radius;
-    x = x == -1 ? obj->x : x;
-    y = y == -1 ? obj->y : y;
+    radius = (radius == -1) ? obj->target_radius : radius;
+    x = (x == -1) ? obj->x : x;
+    y = (y == -1) ? obj->y : y;
 
     // Find the region we are situated in:
     int cx = lrint(x) / REGION_SIZE, cy = lrint(y) / REGION_SIZE;
@@ -309,8 +309,8 @@ int GameInstSet::object_radius_test(GameInst* obj, GameInst* objs, int obj_cap,
             while (ptr != NULL) {
                 GameInst& inst = ptr->inst;
                 if (obj == NULL || obj->id != inst.id) {
-                    double radsqr = (inst.target_radius + rad)
-                            * (inst.target_radius + rad);
+                    double radsqr = (inst.target_radius + radius)
+                            * (inst.target_radius + radius);
                     double dx = inst.x - x, dy = inst.y - y;
                     double dsqr = dx * dx + dy * dy;
                     //want to test sqrt(dsqr) < orad+rad

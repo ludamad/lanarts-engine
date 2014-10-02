@@ -93,7 +93,7 @@ static int object_radius_query(lua_State* L) {
     GameInst results[MAX_RESULTS];
     int amount = set->object_radius_test(set->get_instance(id), results, MAX_RESULTS, x, y, rad);
     for (int i = 1; i <= amount; i++) {
-        lua_pushinteger(L, results[i].id);
+        lua_pushinteger(L, results[i-1].id);
         // Write into the result table
         lua_rawseti(L, 3, i);
     }

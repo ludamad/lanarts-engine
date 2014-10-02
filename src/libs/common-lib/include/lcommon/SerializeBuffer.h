@@ -133,11 +133,11 @@ public:
 		write(d);
 	}
 	void write_byte(int i) {
-		write((char)i);
+		write((unsigned char)i);
 	}
 
-	char read_byte() {
-		char byte;
+	unsigned char read_byte() {
+		unsigned char byte;
 		read(byte);
 		return byte;
 	}
