@@ -160,6 +160,17 @@ namespace ldungeon_gen {
         }
     }
 
+    void submap_apply(MapPtr map, MapPtr submap, Pos map_pos, BBox submap_region, Selector filter, Selector submap_filter) {
+        FOR_EACH_BBOX(submap_region, x, y) {
+            Pos mxy = map_pos + Pos(x, y);
+            Square& dest = (*map)[mxy];
+            Square& src = (*submap)[Pos(x,y)];
+            if (dest.matches(filter) && src.matches(submap_filter)) {
+                dest = src;
+            }
+        }
+    }
+
     BBox random_place(BBox area, MTwist& randomizer, Size size) {
             int rx = randomizer.rand(area.x1, area.x2 - size.w);
             int ry = randomizer.rand(area.y1, area.y2 - size.h);
@@ -203,4 +214,5 @@ namespace ldungeon_gen {
         NoMoreRooms:
         return true;
     }
+
 }

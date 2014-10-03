@@ -104,12 +104,13 @@ void fov::visit(short destX, short destY) {
 
 void fov::update_seen_map(const BoolGridRef& seen) {
     // Iterate the area seen
-    BBox covered = tiles_covered();
+    BBox covered = tiles_covered().translated(-1,-1);
+    covered = covered.resized_within(BBox(Pos(),seen->size()));
 
     // Lua compatibility: Off by 1 subtraction
     FOR_EACH_BBOX(covered, x, y) {
-        if (within_fov(x-1, y-1)) {
-            (*seen)[Pos(x-1,y-1)] = true;
+        if (within_fov(x, y)) {
+            (*seen)[Pos(x,y)] = true;
         }
     }
 }

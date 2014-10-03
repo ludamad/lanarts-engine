@@ -564,6 +564,16 @@ namespace ldungeon_gen {
 		return LuaStackValue(L, -1);
 	}
 
+    static void __submap_apply(LuaStackValue args) {
+        MapPtr map = args["map"].as<MapPtr>();
+        MapPtr submap = args["submap"].as<MapPtr>();
+        Pos xy(args["x"].to_int(), args["y"].to_int());
+        BBox area = luawrap::defaulted(args["submap_area"], BBox(Pos(), submap->size()));
+        Selector selector = lua_selector_get(args["selector"]);
+        Selector submap_selector = lua_selector_get(args["submap_selector"]);
+        submap_apply(map, submap, xy, area, selector, submap_selector);
+    }
+
     static void __perimeter_apply(LuaStackValue args) {
         MapPtr map = args["map"].as<MapPtr>();
         BBox area = luawrap::defaulted(args["area"], BBox(Pos(), map->size()));
@@ -631,6 +641,7 @@ namespace ldungeon_gen {
 		submodule["tunnel_operator"].bind_function(tunnel_operator);
 		submodule["rectangle_apply"].bind_function(rectangle_apply);
 		submodule["tunnel_apply"].bind_function(tunnel_apply);
+		submodule["submap_apply"].bind_function(__submap_apply);
 		submodule["perimeter_apply"].bind_function(__perimeter_apply);
 
 		submodule["random_placement_operator"].bind_function(
