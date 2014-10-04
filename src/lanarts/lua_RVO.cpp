@@ -119,7 +119,7 @@ static int new_rvo_world(lua_State* L) {
     void* valptr = luameta_newuserdata(L, lua_rvoworldmetatable, sizeof(RVOSimulator));
     RVOSimulator* sim = new (valptr) RVOSimulator();
 
-    if (n_args >= 1) {
+    if (n_args >= 1 && !lua_isnil(L, 1)) {
         LuaValue obstacles(L, 1);
         for (int i = 1; i <= obstacles.objlen(); i++) {
             LuaValue obstacle = obstacles[i];
