@@ -10,6 +10,7 @@ endif()
 ## Compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions("-mfpmath=sse -msse2 -ffp-contract=on")
+    add_definitions("-Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions --param=ssp-buffer-size=4 -ggdb3")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

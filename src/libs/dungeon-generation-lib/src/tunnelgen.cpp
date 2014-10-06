@@ -302,6 +302,9 @@ namespace ldungeon_gen {
 //						}
 						generate_entrance(group.group_area, randomizer,
 								std::min(genwidth, 2), p, axis, positive);
+						if (!rect.contains(p)) {
+						    goto label_give_up_on_group;
+						}
 
 						int val = positive ? +1 : -1;
 						int dx = axis ? 0 : val, dy = axis ? val : 0;
@@ -317,6 +320,7 @@ namespace ldungeon_gen {
 						}
 					}
 				}
+				label_give_up_on_group:;
 			}
 		}
 

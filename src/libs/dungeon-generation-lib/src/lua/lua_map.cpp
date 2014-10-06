@@ -4,6 +4,7 @@
  */
 
 #include <lcommon/strformat.h>
+#include <vector>
 
 #include <luawrap/luawrap.h>
 #include <luawrap/members.h>
@@ -444,6 +445,21 @@ namespace ldungeon_gen {
 		return LuaStackValue(L, -1);
 	}
 
+	static std::vector<Pos> rectangle_match(LuaStackValue args) {
+		using namespace luawrap;
+		LuaStackValue oper = rectangle_operator(args);
+		Selector selector = lua_selector_get(args["selector"]);
+		MapPtr map = args["map"].as<MapPtr>();
+		BBox area = defaulted(args["area"], BBox(Pos(), map->size()));
+		std::vector<Pos> matches;
+		FOR_EACH_BBOX(area, x, y) {
+			if ((*map)[Pos(x,y)].matches(selector)) {
+				matches.push_back(Pos(x,y));
+			}
+		}
+		return matches;
+	}
+
 	static bool rectangle_apply(LuaStackValue args) {
 		using namespace luawrap;
 		LuaStackValue oper = rectangle_operator(args);
@@ -651,6 +667,7 @@ namespace ldungeon_gen {
 				random_placement_apply);
 
 		submodule["rectangle_query"].bind_function(rectangle_query_apply);
+		submodule["rectangle_match"].bind_function(rectangle_match);
 		submodule["rectangle_criteria"].bind_function(rectangle_query);
 		submodule["find_random_square"].bind_function(lfind_random_square);
         submodule["get_row_flags"].bind_function(lget_row_flags);
