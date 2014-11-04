@@ -20,11 +20,11 @@ local M = {}
 -- Program constants
 -----------------------------------------------------------------------------
 -- connection timeout in seconds
-TIMEOUT = 60
+M.TIMEOUT = 60
 -- default port for document retrieval
-PORT = 80
+M.PORT = 80
 -- user agent field sent in request
-USERAGENT = socket._VERSION
+M.USERAGENT = socket._VERSION
 
 -----------------------------------------------------------------------------
 -- Reads MIME headers from a connection, unfolding where needed
@@ -111,8 +111,8 @@ function M.open(host, port, create)
     -- create finalized try
     h.try = socket.newtry(function() h:close() end)
     -- set timeout before connecting
-    h.try(c:settimeout(TIMEOUT))
-    h.try(c:connect(host, port or PORT))
+    h.try(c:settimeout(M.TIMEOUT))
+    h.try(c:connect(host, port or M.PORT))
     -- here everything worked
     return h
 end
@@ -207,7 +207,7 @@ end
 local function adjustheaders(reqt)
     -- default headers
     local lower = {
-        ["user-agent"] = USERAGENT,
+        ["user-agent"] = M.USERAGENT,
         ["host"] = reqt.host,
         ["connection"] = "close, TE",
         ["te"] = "trailers"
@@ -227,7 +227,7 @@ end
 -- default url parts
 local default = {
     host = "",
-    port = PORT,
+    port = M.PORT,
     path ="/",
     scheme = "http"
 }
