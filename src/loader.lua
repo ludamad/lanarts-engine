@@ -10,6 +10,16 @@ local BASE_FOLDER = (command_line_args[1] or ".")
 package.cpath = ''
 package.path = '?.lua;src/?.lua;' .. BASE_FOLDER .. "/.lua-deps/?.lua"
 
+-- Lua 'package.loaders' specific: Remove binary loading, no native code outside executable is needed (right now):
+package.loaders[3],package.loaders[4] = package.loaders[4], nil
+
+-- MOAI specific: Ensure that our own lua-socket replacements are picked up:
+for _, k in ipairs {
+    "socket.http", "socket"
+} do
+    package.preload[k] = nil
+end
+
 -- Additional path component from environment variable:
 if os.getenv("p") then
     package.path = package.path .. ';' .. os.getenv("p")
