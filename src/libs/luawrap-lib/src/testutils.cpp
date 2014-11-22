@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 
+#include <string>
 #include <lua.hpp>
 
 #include <luawrap/testutils.h>

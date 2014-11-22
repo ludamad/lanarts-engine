@@ -12,6 +12,11 @@ static const int VIEW_SPEED = 8;
 
 static const int TILE_SIZE = 32;
 
+static int abs(int x) {
+    if (x < 0) return -x;
+    return x;
+}
+
 bool GameView::out_of_view_center(int px, int py) {
 	int dx = px - x, dy = py - y;
 	return (abs(dx) > width / 2 || abs(dy) > height / 2);
